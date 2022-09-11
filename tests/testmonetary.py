@@ -29,8 +29,6 @@ try:
 except ImportError:
     wtforms_present = False
 
-print(sys.path)
-
 class TestMoneyConversions(unittest.TestCase):
 
     # These tests assume a locale where nl_langinfo(RADIXCHAR) is ','
@@ -88,7 +86,7 @@ class TestConvertToInternal(unittest.TestCase):
         self.assertEqual(1766, internal, 'Conversion 2 decimal places failed')
 
     def testconvert_amount_no_precision(self):
-
+        """ Amount no precision converted correctly """
 
         amount_string = '17366'
         internal = internal_amount(amount_string)
@@ -123,6 +121,7 @@ class TestConvertToInternal(unittest.TestCase):
             internal = internal_amount(amount_string)
 
     def test_amount_no_decimal_to_cents(self):
+        """ An edited amount with no decimal is converted to cents """
 
         amount_string = ''.join(('884665'))
         a = validate_amount(amount_string, precision=2)
