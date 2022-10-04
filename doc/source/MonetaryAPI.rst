@@ -12,3 +12,9 @@ Monetary WTForms views
 
 .. automodule:: views.wtformsmonetary
    :members:
+
+Interest calculations
+---------------------
+
+.. automodule:: models.interests
+   :members:

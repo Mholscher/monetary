@@ -32,14 +32,44 @@ Remarks:
 The amount over the period need not be the same.
 """
 
-class interest(object):
+class Interest(object):
+    """ Class to handle interest calculations
 
-    def calc_month(self, amount_cents, interest_fraction):
+    The methods of this class are methods that return a value and those that
+    set up a value in the class of the present calculation. The routines
+    returning a value are in the class because they logically are used
+    in interest calculations. E.g. calc_month is used to calculate  interest
+    over full months.
+    """
+
+    ACTUAL_DAYS = object()
+    ACTUAL_PERIODS = object()
+    ACTUAL_MONTHS = object()
+
+    def __init__(self, from_date, to_date, start_balance, interest_frac):
+
+        self.from_date = from_date
+        self.to_date = to_date
+        self.start_balance = start_balance
+        self.interest_frac = interest_frac
+
+    def amount_cents(self):
+        """ Return the interest amount """
+
+        days = (self.to_date - self.from_date).days
+        amount_cents = (self.start_balance * self.interest_frac / 100
+            * days / 365)
+        return round(amount_cents)
+
+    @classmethod
+    def calc_month(cls, amount_cents, interest_fraction):
         """ Calculate a month worth of interest """
 
-        return round((amount_cents * interest_fraction) ** (1/12))
+        #print(amount_cents * ((1 + 100 *interest_fraction)**(1/12) -1))
+        return round(amount_cents * ((1 + interest_fraction)**(1/12) -1))
 
-    def calc_year(self, amount_cents, interest_fraction):
-        """ Calculate a month worth of interest """
+    @classmethod
+    def calc_year(cls, amount_cents, interest_fraction):
+        """ Calculate a year worth of interest """
 
         return round(amount_cents * interest_fraction)
