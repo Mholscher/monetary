@@ -57,7 +57,7 @@ class Interest(object):
         """ Return the interest amount """
 
         days = (self.to_date - self.from_date).days
-        amount_cents = (self.start_balance * self.interest_frac / 100
+        amount_cents = (self.start_balance * self.interest_frac 
             * days / 365)
         return round(amount_cents)
 

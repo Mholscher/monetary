@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
         interest_amount = Interest(from_date=from_date, to_date=to_date,
                                    start_balance=15000, interest_frac=0.1)
         self.assertTrue(interest_amount, "No amount calculated")
-        self.assertEqual(interest_amount.amount_cents(), 2,
+        self.assertEqual(interest_amount.amount_cents(), 185,
                          "Incorrect amount")
 
     def test_change_interest(self):
@@ -59,17 +59,47 @@ class Test(unittest.TestCase):
         interest_amount = Interest(from_date=from_date, to_date=to_date,
                                    start_balance=105000, interest_frac=0.2)
         self.assertTrue(interest_amount, "No amount calculated")
-        self.assertEqual(interest_amount.amount_cents(), 147,
+        self.assertEqual(interest_amount.amount_cents(), 14729,
                          "Incorrect first amount")
         interest_amount.interest_frac = 0.3
-        self.assertEqual(interest_amount.amount_cents(), 221,
+        self.assertEqual(interest_amount.amount_cents(), 22093,
                          "Incorrect amount after interest change")
         interest_amount.start_balance = 210000
-        self.assertEqual(interest_amount.amount_cents(), 442,
+        self.assertEqual(interest_amount.amount_cents(), 44186,
                          "Incorrect amount after balance change")
         interest_amount.to_date = date(year=2022, month=11, day=5)
-        self.assertEqual(interest_amount.amount_cents(), 637,
+        self.assertEqual(interest_amount.amount_cents(), 63690,
                          "Incorrect amount after date change")
+
+    def test_zero_interest(self):
+        """ Zero rate should return zero interest """
+
+        from_date = date(year=2022, month=3, day=1)
+        to_date = date(year=2022, month=11, day=30)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=150000, interest_frac=0.0)
+        self.assertEqual(interest_amount.amount_cents(), 0, 
+                         "Interest for zero percentage not zero")
+
+    def test_extreme_interest(self):
+        """ extremely high percentage is calculated """
+
+        from_date = date(year=2022, month=3, day=1)
+        to_date = date(year=2023, month=3, day=1)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=150000, interest_frac=2.0)
+        self.assertEqual(interest_amount.amount_cents(), 300000, 
+                         "Interest not calculated correctly")
+
+    def test_negative_interest(self):
+        """ extremely high percentage is calculated """
+
+        from_date = date(year=2022, month=3, day=1)
+        to_date = date(year=2023, month=1, day=12)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=175000, interest_frac=-0.05)
+        self.assertEqual(interest_amount.amount_cents(), -7599, 
+                         "Negative interest not calculated correctly")
 
 
 if __name__ == '__main__' :
