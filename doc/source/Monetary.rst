@@ -115,9 +115,13 @@ Split the duration in years, months and days. Calculate the yearly amount(s) as 
 
     amount in cents * interest fraction * number of days / 365
 
-At the beginning of the period there may be pro rata days. they bridge the period to the beginning of the next  calendar month:
+The interest will not be compounded per month, unless explicitly requested. As compounding will be per month, we will split the period only in months and days if compounding is requested.
+    
+Depending on the calculation type, at the beginning of the period there may also be pro rata days. they bridge the period to the beginning of the next  calendar month:
 
     amount in cents * interest fraction * remaining number of days in month / 365
+
+As this is rather the exception, the default will be full years and months from the start date.
 
 .. _equalmonthscalculation:
 

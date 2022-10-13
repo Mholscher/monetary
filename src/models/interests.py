@@ -32,6 +32,15 @@ Remarks:
 The amount over the period need not be the same.
 """
 
+from dateutil.relativedelta import relativedelta
+
+
+class FromDateAfterToDateError(ValueError):
+    """ The to date parameter is before the from date """
+
+    pass
+
+
 class Interest(object):
     """ Class to handle interest calculations
 
@@ -44,28 +53,55 @@ class Interest(object):
 
     ACTUAL_DAYS = object()
     ACTUAL_PERIODS = object()
-    ACTUAL_MONTHS = object()
+    EQUAL_MONTHS = object()
 
-    def __init__(self, from_date, to_date, start_balance, interest_frac):
+    def __init__(self, from_date, to_date, start_balance, interest_frac,
+                 calculation_method=ACTUAL_DAYS):
 
         self.from_date = from_date
         self.to_date = to_date
         self.start_balance = start_balance
         self.interest_frac = interest_frac
+        self.calculation_method = calculation_method
+        # Check date order
+        if self.from_date > self.to_date:
+            raise FromDateAfterToDateError(f"From date {self.from_date}" +
+                                           f" > to date {self.to_date}")
 
     def amount_cents(self):
         """ Return the interest amount """
 
-        days = (self.to_date - self.from_date).days
-        amount_cents = (self.start_balance * self.interest_frac 
-            * days / 365)
+        if self.calculation_method == self.ACTUAL_DAYS:
+            days = (self.to_date - self.from_date).days
+            amount_cents = (self.start_balance * self.interest_frac 
+                            * days / 365)
+        elif self.calculation_method == self.ACTUAL_PERIODS:
+            amount_cents = self.calculate_sum_periods()
         return round(amount_cents)
+    
+    def calculate_sum_periods(self):
+        """ Calculate the total amount of interest
+
+        First we split the period in years, months and days. Calculate
+        the individual periods and sum the amounts.
+        """
+        amounts_periods = []
+        monthly_amount = self.calc_month(self.start_balance,
+                                         self.interest_frac)
+        period = relativedelta(self.to_date, self.from_date)
+        amounts_periods.append(round(
+                               period.years * self.start_balance *
+                               self.interest_frac))
+        amounts_periods.append(period.months * monthly_amount)
+        amounts_periods.append(round(
+                               self.start_balance * self.interest_frac 
+                               * period.days / 365))
+        return sum(amounts_periods)
 
     @classmethod
     def calc_month(cls, amount_cents, interest_fraction):
         """ Calculate a month worth of interest """
 
-        #print(amount_cents * ((1 + 100 *interest_fraction)**(1/12) -1))
         return round(amount_cents * ((1 + interest_fraction)**(1/12) -1))
 
     @classmethod
