@@ -92,7 +92,7 @@ class TestActualDaysInterest(unittest.TestCase):
                          "Interest not calculated correctly")
 
     def test_negative_interest(self):
-        """ extremely high percentage is calculated """
+        """ a negative interest is calculated """
 
         from_date = date(year=2022, month=3, day=1)
         to_date = date(year=2023, month=1, day=12)
@@ -113,7 +113,7 @@ class TestActualDaysInterest(unittest.TestCase):
                                        interest_frac=0.05)
 
 
-class TestActualPeriodInterest(unittest.TestCase):
+class TestActualAndEqualPeriodInterest(unittest.TestCase):
 
     def test_create_interest(self):
         """ We can create in interest amount using actual periods """
@@ -126,6 +126,10 @@ class TestActualPeriodInterest(unittest.TestCase):
         self.assertTrue(interest_amount, "No amount calculated")
         self.assertEqual(interest_amount.amount_cents(), 178,
                          "Incorrect amount")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 178,
+                         "Incorrect amount")
+        
 
     def test_long_period(self):
         """ Create an interest for a period over a year """
@@ -136,6 +140,9 @@ class TestActualPeriodInterest(unittest.TestCase):
                                    start_balance=144000, interest_frac=0.08,
                                    calculation_method=Interest.ACTUAL_PERIODS)
         self.assertTrue(interest_amount, "No amount calculated")
+        self.assertEqual(interest_amount.amount_cents(), 12510,
+                         "Incorrect amount")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
         self.assertEqual(interest_amount.amount_cents(), 12510,
                          "Incorrect amount")
 
@@ -160,6 +167,9 @@ class TestActualPeriodInterest(unittest.TestCase):
                                    start_balance=150000, interest_frac=0.0)
         self.assertEqual(interest_amount.amount_cents(), 0, 
                          "Interest for zero percentage not zero")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 0, 
+                         "Interest for zero percentage not zero")
 
     def test_extreme_interest(self):
         """ extremely high percentage is calculated """
@@ -170,9 +180,12 @@ class TestActualPeriodInterest(unittest.TestCase):
                                    start_balance=150000, interest_frac=2.0)
         self.assertEqual(interest_amount.amount_cents(), 300000, 
                          "Interest not calculated correctly")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 300000, 
+                         "Interest not calculated correctly")
 
     def test_negative_interest(self):
-        """ extremely high percentage is calculated """
+        """ A negative interest is calculated """
 
         from_date = date(year=2022, month=3, day=1)
         to_date = date(year=2023, month=1, day=12)
@@ -181,6 +194,42 @@ class TestActualPeriodInterest(unittest.TestCase):
                                    calculation_method=Interest.ACTUAL_PERIODS)
         self.assertEqual(interest_amount.amount_cents(), -17160, 
                          "Negative interest not calculated correctly")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), -17160, 
+                         "Negative interest not calculated correctly")
+
+    def test_interest_calendar_months(self):
+        """ We can calculate interest based on calendar months """
+
+        from_date = date(year=2022, month=3, day=21)
+        to_date = date(year=2022, month=5, day=8)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=215000, interest_frac=0.06,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   calendar_months=True)
+        self.assertEqual(interest_amount.amount_cents(), 1683, 
+                         "Interest per calendar not correct")        
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 1612, 
+                         "Interest per calendar equal months not correct")
+
+    def test_compare_equal_months_equal_periods(self):
+        """ Test difference at end of month """
+
+        from_date = date(year=2022, month=2, day=28)
+        to_date = date(year=2022, month=3, day=31)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=115000, interest_frac=1.0,
+                                   calculation_method=Interest.ACTUAL_PERIODS)
+        interest_amount_equal = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=115000, interest_frac=1.0,
+                                   calculation_method=Interest.EQUAL_MONTHS)
+        #print(interest_amount.amount_cents(), interest_amount_equal.amount_cents())
+        self.assertTrue(interest_amount.amount_cents()
+                        > interest_amount_equal.amount_cents(), 
+                         "Not expected difference between methods")
+
+
 
 if __name__ == '__main__' :
     unittest.main()
