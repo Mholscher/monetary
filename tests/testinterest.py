@@ -41,7 +41,7 @@ class TestActualDaysInterest(unittest.TestCase):
                          "Interest amount wrong")
 
     def test_create_interest(self):
-        """ We can create in interest amount """
+        """ We can create an interest amount """
 
         from_date = date(year=2021, month=12, day=1)
         to_date = date(year=2022, month=1, day=15)
@@ -230,6 +230,59 @@ class TestActualAndEqualPeriodInterest(unittest.TestCase):
                          "Not expected difference between methods")
 
 
+class TestCompoundInterest(unittest.TestCase):
+
+    def test_calculate_compound_interest(self):
+        """ Calculate compound interest """
+
+        from_date = date(year=2021, month=3, day=1)
+        to_date = date(year=2021, month=5, day=1)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=50000, interest_frac=0.05,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   compound="monthly")
+        self.assertEqual(interest_amount.amount_cents(), 409, 
+                         "Interest not compounded correctly")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 409, 
+                         "Interest not compounded correctly")
+
+    def test_eom_dates(self):
+        """ Compounding should hendle day nos > 28 """
+
+        self.assertTrue(1)
+
+    def test_compound_over_1_year(self):
+        """ Compounding by month should work for longer periods """
+
+        from_date = date(year=2021, month=12, day=5)
+        to_date = date(year=2023, month=2, day=10)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=1050000, interest_frac=0.09,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   compound="monthly")
+        self.assertEqual(interest_amount.amount_cents(), 112487, 
+                         "Interest not compounded correctly")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 112487, 
+                         "Interest not compounded correctly")
+
+
+    def test_compound_over_few_days(self):
+        """ Compounding over less than a month works """
+
+        from_date = date(year=2021, month=12, day=5)
+        to_date = date(year=2021, month=12, day=10)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=12000, interest_frac=0.09,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   compound="monthly")
+        self.assertEqual(interest_amount.amount_cents(), 15, 
+                         "Interest compounded over short period not correct")
+        interest_amount.calculation_method = Interest.EQUAL_MONTHS
+        self.assertEqual(interest_amount.amount_cents(), 15, 
+                         "Interest compounded over short period not correct")
+        
 
 if __name__ == '__main__' :
     unittest.main()

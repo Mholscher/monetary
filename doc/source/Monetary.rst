@@ -129,3 +129,20 @@ Equal months (360/30)
 ---------------------
 
 Split the duration in years, months and days. Calculate the yearly amount(s) as specified in :ref:`yearofinterests`, the monthly amount(s) as specified in :ref:`monthofinterests` and the daily amounts over the pro rata days, where any period in a month greater than or equal to 30 days equates to a whole month, with the exception of February, where the cut-off is at the 28th. The calculation of the interest rate is the same as for the :ref:`actualperiodscalculation` method.
+
+.. _compoundinterest:
+
+Compounding interest
+--------------------
+
+Each method has the possibility of compounding interest. The interest will be capitalized (i.e. added to the balance) every month or year, chosen by the caller. An example of compounding::
+
+    start balance = 50000
+    interest fraction = ,05 (5%)
+    compounding = monthly
+
+    first month interest = 204
+    balance at start of 2nd month = 50204
+    second month interest = 205
+    balance at start of 3rd month = 50409
+    etc.
