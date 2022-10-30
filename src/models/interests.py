@@ -86,9 +86,12 @@ class Interest(object):
         """ Return the interest amount """
 
         if self.calculation_method == self.ACTUAL_DAYS:
-            days = (self.to_date - self.from_date).days
-            amount_cents = (self.start_balance * self.interest_frac 
-                            * days / 365)
+            if self.compound == "monthly":
+                amount_cents = self.calculate_sum_periods()
+            else:
+                days = (self.to_date - self.from_date).days
+                amount_cents = (self.start_balance * self.interest_frac 
+                                * days / 365)
         elif (self.calculation_method == self.ACTUAL_PERIODS
               or self.calculation_method == self.EQUAL_MONTHS):
             amount_cents = self.calculate_sum_periods()
@@ -109,21 +112,35 @@ class Interest(object):
         monthly_amount = self.calc_month(self.start_balance,
                                          self.interest_frac)
         period = relativedelta(self.to_date, from_date)
+        # For montly compounding convert years in duration to months
         if self.compound == "monthly":
             period.months = period.months + 12 * period.years
             period.years = 0
+        # Calculate full years of interest
         amounts_periods.append(round(
                                period.years * self.start_balance *
                                self.interest_frac))
-        if self.compound:
+        # Calculate months of interest
+        if self.compound == "monthly":
             current_balance = self.start_balance
+            date_until = date_from = self.from_date
             for _ in range(period.months):
-                interest_this_period = self.calc_month(current_balance,
-                                         self.interest_frac)
+                date_until = self._next_compounding_date(date_from,
+                                                         date_until)
+                interest_this_period = (round(current_balance * 
+                                        self.interest_frac
+                                        * (date_until - date_from).days / 365)
+                                        if self.calculation_method ==
+                                            self.ACTUAL_DAYS
+                                        else
+                                        self.calc_month(current_balance,
+                                        self.interest_frac))
+                date_from = date_until
                 current_balance = current_balance + interest_this_period
                 amounts_periods.append(interest_this_period)
         else:
             amounts_periods.append(period.months * monthly_amount)
+        # And lastly, calculate the interest on pro rata days at the end
         days = (period.days - 1 if (self.calculation_method == self.EQUAL_MONTHS
                                    and self.to_date.day > 30)
                                 else period.days)
@@ -136,6 +153,21 @@ class Interest(object):
                                * self.interest_frac / 365))
         return sum(amounts_periods)
 
+    def _next_compounding_date(self, date_from, date_until):
+        """ Determine the next date for compounding.
+
+        Needed for calculating with the actual days method.
+        """
+
+        date_until = date_until + relativedelta(months=1)
+        if date_until.day < self.from_date.day:
+            try:
+                date_until = date(date_until.year, date_until.month,
+                                  self.from_date.day)
+            except ValueError:
+                pass
+        return date_until
+
     def _som(self, for_date):
         """ Calculate the start of month after for_date """
 
@@ -147,6 +179,11 @@ class Interest(object):
             year = for_date.year
         day = 1
         return date(year, month, day)
+
+    def _eom(self, for_date):
+        """ Calculate the last day of the month for for_date """
+
+        return self._som(for_date) - relativedelta(days=1)
 
     def calculate_prorata_at_start(self):
         """ Calculate the interest until the start of next month
