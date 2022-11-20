@@ -10,6 +10,7 @@ Welcome to the Monetary library documentation!
    :maxdepth: 2
    
    Monetary
+   Interest
    MonetaryAPI
 
 Indices and tables
