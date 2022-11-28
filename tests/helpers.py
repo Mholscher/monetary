@@ -43,3 +43,12 @@ class MultiDict:
             if key == k:
                 result.append(v)
         return result
+
+def calc_3_tenths(amount):
+    """ Test routine to return 3/10th of the amount passed in 
+
+        :amount: an amount in the smallest denomination of the currency
+
+    """
+
+    return 3 * amount // 10

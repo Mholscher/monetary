@@ -19,6 +19,7 @@ import sys
 import unittest
 from datetime import date, timedelta
 from models.interests import Interest, RunningInterest
+#from helpers import calc_3_tenths
 
 class TestActualDaysInterest(unittest.TestCase):
 
@@ -364,7 +365,7 @@ class TestCompoundInterest(unittest.TestCase):
                             calculation_method=Interest.ACTUAL_PERIODS,
                             compound="monthly")
         interest_amount = interest.amount_cents()
-        self.assertEqual(interest.next_interest_date, date(2021, 6, 1), 
+        self.assertEqual(interest.next_interest_date, date(2021, 5, 1), 
                          "Next interest date not correct")
 
 
@@ -436,6 +437,34 @@ class TestChangingAmount(unittest.TestCase):
                                    compound="monthly")
         self.assertEqual(interest.amount_cents(), 26718,
                          "Incorrect amount calculated")
+
+    def test_one_period_no_compound(self):
+        """ One period has no compounding interest date """
+
+        period_list = [{"from_date" : date(2022, 8, 2), 
+                        "to_date" : date(2022, 11, 18),
+                        "start_balance" : 1130000,
+                        "interest_frac" : 0.06},
+                        {"from_date" : date(2022, 11, 19), 
+                        "to_date" : date(2022, 11, 28),
+                        "start_balance" : 1123500,
+                        "interest_frac" : 0.07},
+                        {"from_date" : date(2022, 11, 29), 
+                        "to_date" : date(2022, 12, 22),
+                        "start_balance" : 1123500,
+                        "interest_frac" : 0.07}]
+        interest = RunningInterest(period_list,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   compound="monthly")
+        amount_interest = interest.amount_cents()
+        self.assertEqual(interest.next_interest_date, date(2023, 1, 2),
+                         "Wrong next interest date")
+        interest = RunningInterest(period_list,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   compound="monthly")
+        self.assertEqual(interest.amount_cents(), 26494,
+                         "Incorrect amount calculated")
+
  
 
 if __name__ == '__main__' :

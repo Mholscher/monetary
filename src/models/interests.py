@@ -80,7 +80,7 @@ class Interest(object):
         if next_interest_date:
             self.next_interest_date = next_interest_date
         else:
-            self.next_interest_date = self.from_date + relativedelta(months=1)
+            self.next_interest_date = self.from_date + relativedelta(months=1)       
         # Check date order
         if self.from_date > self.to_date:
             raise FromDateAfterToDateError(f"From date {self.from_date}" +
@@ -119,6 +119,7 @@ class Interest(object):
         if self.compound == "monthly":
             period.months = period.months + 12 * period.years
             period.years = 0
+
         # Calculate full years of interest
         amounts_periods.append(round(
                                period.years * self.start_balance *
@@ -155,13 +156,14 @@ class Interest(object):
             amounts_periods.append(round(days * current_balance
                                          * self.interest_frac / 365))
             # Up the next interest date
-            self.next_interest_date =\
-                self._next_compounding_date(date_from)            
+            self.next_interest_date =(self._next_compounding_date(date_from)
+                                      if self.next_interest_date < self.to_date
+                                      else self.next_interest_date)
         else:
             amounts_periods.append(round(
                                days * self.start_balance        
                                * self.interest_frac / 365))
-        #print(amounts_periods)
+
         return sum(amounts_periods)
 
     def _next_compounding_date(self, date_from):
@@ -174,7 +176,8 @@ class Interest(object):
         """
 
         date_until = date_from + relativedelta(months=1)
-        if date_until.day < self.from_date.day:
+        if (date_until.day >= 28
+            and date_until.day < self.from_date.day):
             try:
                 date_until = date(date_until.year, date_until.month,
                                   self.from_date.day)
@@ -241,7 +244,6 @@ class Interest(object):
                     prorata_days = 0
             else:
                 prorata_days = period.days
-        #print(prorata_days)
         return round(prorata_days * self.interest_frac *
                      self.start_balance / 365)
 
@@ -252,6 +254,8 @@ class Interest(object):
         next compounding may not be for a full month.
         """
 
+        #print("Pro rata calc next interest date", self.next_interest_date,
+              #"date from & to date", self.from_date, self.to_date)
         period = relativedelta(min(self.next_interest_date,
                                    self.to_date), self.from_date)
         #print("Period months and days:", period.months, period.days)
@@ -265,8 +269,10 @@ class Interest(object):
                           self.interest_frac
                           * (min(self.next_interest_date, self.to_date)
                           - self.from_date).days / 365))
+
         if (period.years != 0 or period.months != 0):
             raise ValueError("Next interest date must be < 1 month away")
+
         return (round(period.days * self.interest_frac *
                      self.start_balance / 365) if period.months == 0 else
                      self.calc_month(self.start_balance,
@@ -311,6 +317,13 @@ class RunningInterest(object):
         :calendar_month: The months are equal to calendar months or not, i.e. if a pro rata period may be present at the start of the period (default: False)
         :compound: Use compound interest for "monthly" or "yearly"periods. Pass None to not compound interest.
 
+    One periodic amount is a dictionary having the following fields:
+
+        :from_date: The start date of the period
+        :to_date: The end date of the period
+        :start_balance: the starting balance for the period. The balance will change over the period as interest is calculated and compounded
+        :interest_frac: the interest fraction (interest rate / 100) for the period
+
     """
 
     def __init__(self, periodic_amounts, 
@@ -340,7 +353,9 @@ class RunningInterest(object):
         """ Return the interest amount """
 
         amounts_list = []
-        self.next_interest_date = None
+        if self.interest_periods:
+            self.next_interest_date =\
+                self.interest_periods[0].next_interest_date
         for interest in self.interest_periods:
             interest.next_interest_date = self.next_interest_date
             amounts_list.append(interest.amount_cents())

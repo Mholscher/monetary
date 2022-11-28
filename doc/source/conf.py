@@ -18,12 +18,12 @@ sys.path.insert(1, os.path.abspath('../../debtors'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Debtors Management'
+project = 'The monetary library'
 copyright = '2019-2020, Menno Hölscher'
 author = 'Menno Hölscher'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1a1'
+release = '0.1a2'
 
 
 # -- General configuration ---------------------------------------------------

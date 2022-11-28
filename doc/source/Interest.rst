@@ -95,3 +95,27 @@ Each method has the possibility of compounding interest. The interest will be ca
     second month interest = 205
     balance at start of 3rd month = 50409
     etc.
+
+.. _runninginterest:
+
+Interest over a period with varying amount/interest rate
+--------------------------------------------------------
+
+When interest is being calculated over a period where the interest rate or amount will differ for different sub-periods, we use the RunningInterest. We pass is the periods, amounts and interest fractions, and further the other data like the calculation method and whether compounding needs to take place.
+
+For the non-compounding case, things are easy. For each period the interest is calculated. For the compounding case we need to either calculate interest up to the next period or the next interest calculation date. Example::
+
+    start balance = 130000
+    interest fraction = ,05 (5%)
+    compounding = monthly
+    start date = 8th December 2022
+    switch date = 12th January 2023, new balance = 135000
+
+    first month interest = 530
+    balance at start of 2nd month = 130530
+    pro rata interest 8-1 to 12-1 = 72
+    new balance at 12-1 = 135000
+    pro rata interest 12-1 to 8-2 = 502
+    balance at start of third month = 135502
+
+The basic method of passing all data for a period. However, for convenience you can also pass a structure with a start amount and start date, followed by change dates and a function to calculate change amounts and an overall end date. See the technical documentation for :ref:`apiinterestcalculations`.
