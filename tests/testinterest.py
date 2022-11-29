@@ -365,7 +365,7 @@ class TestCompoundInterest(unittest.TestCase):
                             calculation_method=Interest.ACTUAL_PERIODS,
                             compound="monthly")
         interest_amount = interest.amount_cents()
-        self.assertEqual(interest.next_interest_date, date(2021, 5, 1), 
+        self.assertEqual(interest.next_interest_date, date(2021, 6, 1), 
                          "Next interest date not correct")
 
 

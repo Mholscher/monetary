@@ -157,7 +157,7 @@ class Interest(object):
                                          * self.interest_frac / 365))
             # Up the next interest date
             self.next_interest_date =(self._next_compounding_date(date_from)
-                                      if self.next_interest_date < self.to_date
+                                      if self.next_interest_date <= self.to_date
                                       else self.next_interest_date)
         else:
             amounts_periods.append(round(
