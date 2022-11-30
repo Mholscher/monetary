@@ -89,15 +89,12 @@ class Interest(object):
     def amount_cents(self):
         """ Return the interest amount """
 
-        if self.calculation_method == self.ACTUAL_DAYS:
-            if self.compound == "monthly":
-                amount_cents = self.calculate_sum_periods()
-            else:
+        if (self.calculation_method == self.ACTUAL_DAYS
+            and self.compound != "monthly"):
                 days = (self.to_date - self.from_date).days
                 amount_cents = (self.start_balance * self.interest_frac 
                                 * days / 365)
-        elif (self.calculation_method == self.ACTUAL_PERIODS
-              or self.calculation_method == self.EQUAL_MONTHS):
+        else:
             amount_cents = self.calculate_sum_periods()
         return round(amount_cents)
     
@@ -112,8 +109,6 @@ class Interest(object):
         amounts_periods = []
         from_date = self._calculate_pro_ratas(amounts_periods)
 
-        monthly_amount = self.calc_month(self.start_balance,
-                                         self.interest_frac)
         period = relativedelta(self.to_date, from_date)
         # For montly compounding convert years in duration to months
         if self.compound == "monthly":
@@ -146,6 +141,8 @@ class Interest(object):
                 current_balance = current_balance + interest_this_period
                 amounts_periods.append(interest_this_period)
         else:
+            monthly_amount = self.calc_month(self.start_balance,
+                                             self.interest_frac)
             amounts_periods.append(period.months * monthly_amount)
 
         # And lastly, calculate the interest on pro rata days at the end
@@ -190,7 +187,7 @@ class Interest(object):
 
         if for_date.month >= 12:
             month = 1
-            year = year + 1
+            year = for_date.year + 1
         else:
             month = for_date.month + 1
             year = for_date.year
@@ -223,7 +220,7 @@ class Interest(object):
                     from_date = self.from_date
             else:
                 from_date = self.from_date
-        return from_date
+        return min(from_date, self.to_date)
 
     def calculate_prorata_at_start(self):
         """ Calculate the interest until the start of next month
@@ -235,6 +232,7 @@ class Interest(object):
         start_next_month = self._som(self.from_date)
         if start_next_month > self.to_date:
             period = relativedelta(self.to_date, self.from_date)
+            prorata_days = period.days
         else:
             period = relativedelta(start_next_month, self.from_date)
             if self.calculation_method == self.EQUAL_MONTHS:
@@ -244,6 +242,7 @@ class Interest(object):
                     prorata_days = 0
             else:
                 prorata_days = period.days
+
         return round(prorata_days * self.interest_frac *
                      self.start_balance / 365)
 
@@ -254,16 +253,12 @@ class Interest(object):
         next compounding may not be for a full month.
         """
 
-        #print("Pro rata calc next interest date", self.next_interest_date,
-              #"date from & to date", self.from_date, self.to_date)
         period = relativedelta(min(self.next_interest_date,
                                    self.to_date), self.from_date)
-        #print("Period months and days:", period.months, period.days)
-        #print("calculated from next interest:", self.next_interest_date,
-                                   #"to date", self.to_date,
-                                   #"from date", self.from_date)
+
         if period.months == 1 and period.days == 0:
             return 0
+
         if self.calculation_method == self.ACTUAL_DAYS:
             return (round(self.start_balance * 
                           self.interest_frac
@@ -274,9 +269,7 @@ class Interest(object):
             raise ValueError("Next interest date must be < 1 month away")
 
         return (round(period.days * self.interest_frac *
-                     self.start_balance / 365) if period.months == 0 else
-                     self.calc_month(self.start_balance,
-                                     self.interest_frac))
+                     self.start_balance / 365))
 
     @classmethod
     def calc_month(cls, amount_cents, interest_fraction):

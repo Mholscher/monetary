@@ -113,6 +113,16 @@ class TestActualDaysInterest(unittest.TestCase):
                                        start_balance=155000,
                                        interest_frac=0.05)
 
+    def test_start_month_december_is_january(self):
+        """ Determine start of month after December is January 1st """
+
+        from_date = date(year=2022, month=12, day=24)
+        to_date = date(year=2023, month=1, day=12)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=17500, interest_frac=-0.045)
+        self.assertEqual(interest_amount._som(from_date), date(2023, 1, 1),
+                         "Start of month after December not January 1st")
+
 
 class TestActualAndEqualPeriodInterest(unittest.TestCase):
 
@@ -229,6 +239,19 @@ class TestActualAndEqualPeriodInterest(unittest.TestCase):
         self.assertTrue(interest_amount.amount_cents()
                         > interest_amount_equal.amount_cents(), 
                          "Not expected difference between methods")
+
+    def test_short_period_calendar_month(self):
+        """ Calculate interest for period within 1 month """
+
+        from_date = date(year=2022, month=2, day=8)
+        to_date = date(year=2022, month=2, day=21)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=120000, interest_frac=.12,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   calendar_months=True)
+        self.assertEqual(interest_amount.amount_cents(), 513,
+                         "Short period interest wrong")
+
 
 
 class TestCompoundInterest(unittest.TestCase):
