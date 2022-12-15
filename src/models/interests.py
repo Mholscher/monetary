@@ -66,8 +66,9 @@ class Interest(object):
     ACTUAL_PERIODS = object()
     EQUAL_MONTHS = object()
 
-    def __init__(self, from_date, to_date, start_balance, interest_frac,
-                 calculation_method=ACTUAL_DAYS, calendar_months=False,
+    def __init__(self, from_date, to_date, start_balance,
+                 interest_frac, calculation_method=ACTUAL_DAYS,
+                 calendar_months=False,
                  compound=None, next_interest_date=None):
 
         self.from_date = from_date
@@ -96,8 +97,9 @@ class Interest(object):
                                 * days / 365)
         else:
             amount_cents = self.calculate_sum_periods()
+        self.current_balance = self.start_balance + round(amount_cents)
         return round(amount_cents)
-    
+
     def calculate_sum_periods(self):
         """ Calculate the total amount of interest
 
@@ -354,3 +356,49 @@ class RunningInterest(object):
             amounts_list.append(interest.amount_cents())
             self.next_interest_date = interest.next_interest_date
         return sum(amounts_list)
+
+
+    @staticmethod
+    def create_periods(deltas_list):
+        """ Convert a list of deltas into a period list. 
+
+        Input is the following:
+
+            :start_balance: The starting balance for the first period
+            :interest_fraction: the interest fraction for the first period
+            :compounding: optional; "monthly"if monthly interest compounding is required
+            :periodic_amounts: The amount information for the following period:
+            :to_date: the end date of the last period
+
+        Each of the periodic_amounts has the following data:
+
+            :balance_delta: The amount to add/subtract from the balance
+            :balance_calculation: a function to calculate the change amount. **Warning**: if an amount and a function are supplied, the function takes precedence
+            :interest_fraction: The interest fraction for this period
+
+        """
+
+        period_list = []
+        improved_deltas = []
+        for i in range(len(deltas_list)-1):
+            improved_deltas.append((deltas_list[i], deltas_list[i+1]))
+        current_balance = 0
+        for delta in improved_deltas:
+            period = dict()
+            period["from_date"] = delta[0]["from_date"]
+            period["to_date"] = (delta[1]["from_date"] -
+                                 relativedelta(days=1) 
+                                 if "from_date" in delta[1]
+                                 else delta[1]["end_date"])
+            if "balance_delta" in delta[0]:
+                period["start_balance"] = (current_balance +
+                                           delta[0]["balance_delta"])
+            elif "balance_calculation" in delta[0]:
+                period["balance_calculation"] = delta[0]["balance_calculation"]
+            else:
+                period["start_balance"] = delta[0]["start_balance"]
+            period["interest_frac"] = delta[0]["interest_frac"]
+            period_list.append(period)
+            if "start_balance" in period:
+                current_balance = period["start_balance"]
+        return period_list

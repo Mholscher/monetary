@@ -96,6 +96,15 @@ Each method has the possibility of compounding interest. The interest will be ca
     balance at start of 3rd month = 50409
     etc.
 
+.. _balancedeltas:
+
+Using increase/decrease amounts to adjust balances
+--------------------------------------------------
+
+When calculating interest, you can also use balance changes. These changes are passed into the calculation and change the start balance of the calculation. The change amount can be positive and negative, denoting an increase or a decrease of the balance.
+
+These changes can also be used to create a running interest where only the balance at start of the interest period is known. See :ref:`runninginterest`. 
+
 .. _runninginterest:
 
 Interest over a period with varying amount/interest rate
@@ -118,4 +127,6 @@ For the non-compounding case, things are easy. For each period the interest is c
     pro rata interest 12-1 to 8-2 = 502
     balance at start of third month = 135502
 
-The basic method of passing all data for a period. However, for convenience you can also pass a structure with a start amount and start date, followed by change dates and a function to calculate change amounts and an overall end date. See the technical documentation for :ref:`apiinterestcalculations`.
+The basic method of passing all data for a period. However, for convenience you can also pass a structure with a start amount and start date, followed by change dates and either a new balance or a function to calculate change amounts, and an overall end date. See the technical documentation for :ref:`apiinterestcalculations`.
+
+As the changes are only passed in at the time of calculating the interest, you can use it also to calculate a running interest with balances unknown before the calculation. Create the running interest with only a start balance for the first period and pass in the current balance for all of the next.

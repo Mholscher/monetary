@@ -19,7 +19,7 @@ import sys
 import unittest
 from datetime import date, timedelta
 from models.interests import Interest, RunningInterest
-#from helpers import calc_3_tenths
+from tests.helpers import calc_3_tenths
 
 class TestActualDaysInterest(unittest.TestCase):
 
@@ -251,6 +251,21 @@ class TestActualAndEqualPeriodInterest(unittest.TestCase):
                                    calendar_months=True)
         self.assertEqual(interest_amount.amount_cents(), 513,
                          "Short period interest wrong")
+
+    def test_get_current_balance(self):
+        """ We can get the current balance after a period """
+
+        from_date = date(year=2022, month=2, day=16)
+        to_date = date(year=2022, month=3, day=8)
+        interest_amount = Interest(from_date=from_date, to_date=to_date,
+                                   start_balance=111350000, interest_frac=.12,
+                                   calculation_method=Interest.ACTUAL_PERIODS,
+                                   calendar_months=False)
+        interest_due = interest_amount.amount_cents()
+        self.assertEqual(interest_amount.current_balance,
+                         interest_amount.start_balance + interest_due,
+                         "Incorrect current balance")
+
 
 
 
@@ -488,7 +503,65 @@ class TestChangingAmount(unittest.TestCase):
         self.assertEqual(interest.amount_cents(), 26494,
                          "Incorrect amount calculated")
 
- 
+class TestDeltaBalances(unittest.TestCase):
+
+    def setUp(self):
+        self.period_list = [{"from_date" : date(2022, 8, 14), 
+                "to_date" : date(2022, 10, 19),
+                "start_balance" : 12760000,
+                "interest_frac" : 0.04},
+                {"from_date" : date(2022, 10, 20), 
+                "to_date" : date(2022, 12, 20),
+                "start_balance" : 11250000,
+                "interest_frac" : 0.03}]
+
+    def tearDown(self):
+
+        del(self.period_list)
+
+    def test_convert_static_changes(self):
+        """ We can create a static list from deltas """
+
+        deltas_list = [{"from_date" : date(2022, 8, 14),
+                        "start_balance" : 12760000,
+                        "interest_frac" : 0.04},
+                       {"from_date" : date(2022, 10, 20), 
+                        "balance_delta" : -1510000,
+                        "interest_frac" : 0.03},
+                       {"end_date" : date(2022, 12, 20)}]
+        period_list = RunningInterest.create_periods(deltas_list)
+        self.assertEqual(period_list, self.period_list,
+                         "Did not create correct static period list")
+
+    def test_just_one_period(self):
+        """ Create a static list of just 1 period """
+
+        deltas_list = [{"from_date" : date(2022, 10, 4),
+                        "start_balance" : 12750000,
+                        "interest_frac" : 0.035},
+                       {"end_date" : date(2023, 1, 20)}]
+        period_list = RunningInterest.create_periods(deltas_list)
+        expanded_period_list = [{"from_date": date(2022, 10, 4),
+                                 "to_date" : date(2023, 1, 20),
+                                 "start_balance" : 12750000,
+                                 "interest_frac" : 0.035}]
+        self.assertEqual(period_list, expanded_period_list,
+                         "Did not create correct static period list")
+
+    def test_calculation_function(self):
+        """ The calculation function is passed to the period list """
+
+        deltas_list = [{"from_date" : date(2022, 8, 14),
+                        "start_balance" : 12760000,
+                        "interest_frac" : 0.04},
+                       {"from_date" : date(2022, 10, 20), 
+                        "balance_calculation" : calc_3_tenths,
+                        "interest_frac" : 0.03},
+                       {"end_date" : date(2022, 12, 20)}]
+        period_list = RunningInterest.create_periods(deltas_list)
+        self.assertIn("balance_calculation", period_list[1],
+                         "Amount calculation not present")
+
 
 if __name__ == '__main__' :
     unittest.main()
