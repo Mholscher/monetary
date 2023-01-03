@@ -68,20 +68,24 @@ class Interest(object):
 
     def __init__(self, from_date, to_date, start_balance,
                  interest_frac, calculation_method=ACTUAL_DAYS,
+                 balance_calculation=None,
                  calendar_months=False,
                  compound=None, next_interest_date=None):
 
         self.from_date = from_date
         self.to_date = to_date
         self.start_balance = start_balance
+        self.balance_calculation = balance_calculation
         self.interest_frac = interest_frac
         self.calculation_method = calculation_method
         self.calendar_months = calendar_months
         self.compound = compound
-        if next_interest_date:
+        if next_interest_date and compound == "monthly":
             self.next_interest_date = next_interest_date
+        elif compound == "monthly":
+            self.next_interest_date = self.from_date + relativedelta(months=1)
         else:
-            self.next_interest_date = self.from_date + relativedelta(months=1)       
+            self.next_interest_date = None
         # Check date order
         if self.from_date > self.to_date:
             raise FromDateAfterToDateError(f"From date {self.from_date}" +
@@ -90,14 +94,17 @@ class Interest(object):
     def amount_cents(self):
         """ Return the interest amount """
 
+        self.use_balance = (self.balance_calculation(self.current_balance)
+                                if self.balance_calculation
+                                else self.start_balance)
         if (self.calculation_method == self.ACTUAL_DAYS
             and self.compound != "monthly"):
                 days = (self.to_date - self.from_date).days
-                amount_cents = (self.start_balance * self.interest_frac 
+                amount_cents = (self.use_balance * self.interest_frac 
                                 * days / 365)
         else:
             amount_cents = self.calculate_sum_periods()
-        self.current_balance = self.start_balance + round(amount_cents)
+        self.current_balance = self.use_balance + round(amount_cents)
         return round(amount_cents)
 
     def calculate_sum_periods(self):
@@ -119,12 +126,12 @@ class Interest(object):
 
         # Calculate full years of interest
         amounts_periods.append(round(
-                               period.years * self.start_balance *
+                               period.years * self.use_balance *
                                self.interest_frac))
 
         # Calculate months of interest
         if self.compound == "monthly":
-            current_balance = self.start_balance + sum(amounts_periods)
+            current_balance = self.use_balance + sum(amounts_periods)
             date_from = from_date
             for _ in range(period.months):
                 self.next_interest_date =\
@@ -143,7 +150,7 @@ class Interest(object):
                 current_balance = current_balance + interest_this_period
                 amounts_periods.append(interest_this_period)
         else:
-            monthly_amount = self.calc_month(self.start_balance,
+            monthly_amount = self.calc_month(self.use_balance,
                                              self.interest_frac)
             amounts_periods.append(period.months * monthly_amount)
 
@@ -160,9 +167,8 @@ class Interest(object):
                                       else self.next_interest_date)
         else:
             amounts_periods.append(round(
-                               days * self.start_balance        
+                               days * self.use_balance        
                                * self.interest_frac / 365))
-
         return sum(amounts_periods)
 
     def _next_compounding_date(self, date_from):
@@ -246,7 +252,7 @@ class Interest(object):
                 prorata_days = period.days
 
         return round(prorata_days * self.interest_frac *
-                     self.start_balance / 365)
+                     self.use_balance / 365)
 
     def pro_rata_interest(self):
         """ Calculate the pro rata interest until an early interest date
@@ -257,12 +263,11 @@ class Interest(object):
 
         period = relativedelta(min(self.next_interest_date,
                                    self.to_date), self.from_date)
-
         if period.months == 1 and period.days == 0:
             return 0
 
         if self.calculation_method == self.ACTUAL_DAYS:
-            return (round(self.start_balance * 
+            return (round(self.use_balance * 
                           self.interest_frac
                           * (min(self.next_interest_date, self.to_date)
                           - self.from_date).days / 365))
@@ -271,7 +276,7 @@ class Interest(object):
             raise ValueError("Next interest date must be < 1 month away")
 
         return (round(period.days * self.interest_frac *
-                     self.start_balance / 365))
+                     self.use_balance / 365))
 
     @classmethod
     def calc_month(cls, amount_cents, interest_fraction):
@@ -337,7 +342,13 @@ class RunningInterest(object):
         for amount in self.periodic_amounts:
             interest  = Interest(from_date=amount["from_date"],
                                  to_date=amount["to_date"],
-                                 start_balance=amount["start_balance"],
+                                 start_balance=amount["start_balance"]
+                                    if "start_balance" in amount
+                                    else None,
+                                 balance_calculation=
+                                    amount["balance_calculation"]
+                                    if "balance_calculation" in amount
+                                    else None,
                                  interest_frac=amount["interest_frac"],
                                  calculation_method=self.calculation_method,
                                  compound=self.compound,
@@ -348,12 +359,18 @@ class RunningInterest(object):
         """ Return the interest amount """
 
         amounts_list = []
-        if self.interest_periods:
+        if (self.interest_periods 
+            and self.interest_periods[0].next_interest_date):
             self.next_interest_date =\
                 self.interest_periods[0].next_interest_date
+        current_balance = self.interest_periods[0].start_balance
         for interest in self.interest_periods:
-            interest.next_interest_date = self.next_interest_date
+            if interest.next_interest_date:
+                interest.next_interest_date = self.next_interest_date
+            interest.current_balance = current_balance
             amounts_list.append(interest.amount_cents())
+            if self.compound:
+                current_balance = interest.current_balance
             self.next_interest_date = interest.next_interest_date
         return sum(amounts_list)
 
