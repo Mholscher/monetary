@@ -51,4 +51,4 @@ def calc_3_tenths(amount):
 
     """
 
-    return 3 * amount // 10
+    return round(3 * amount // 10)

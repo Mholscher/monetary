@@ -579,6 +579,23 @@ class TestDeltaBalances(unittest.TestCase):
         self.assertEqual(interest.amount_cents(), 76275,
                          "Calculation of amount failed")
 
+    def test_compound_calculation(self):
+        """ A compound interest amount is calculated """
+
+        deltas_list = [{"from_date" : date(2022, 8, 7),
+                        "start_balance" : 12800000,
+                        "interest_frac" : 0.04},
+                       {"from_date" : date(2022, 9, 10), 
+                        "balance_calculation" : calc_3_tenths,
+                        "interest_frac" : 0.03},
+                       {"end_date" : date(2022, 12, 20)}]
+        period_list = RunningInterest.create_periods(deltas_list)
+        interest = RunningInterest(period_list, 
+                 calculation_method=Interest.ACTUAL_PERIODS,
+                 calendar_months=False, compound="monthly")
+        self.assertEqual(interest.amount_cents(), 76490,
+                         "Calculation of amount failed")
+
 
 if __name__ == '__main__' :
     unittest.main()
