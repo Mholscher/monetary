@@ -52,3 +52,7 @@ def calc_3_tenths(amount):
     """
 
     return round(3 * amount // 10)
+
+def idem(amount):
+
+    return amount

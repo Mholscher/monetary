@@ -114,10 +114,8 @@ class Interest(object):
         the individual periods and sum the amounts.
         """
 
-        #print("Calculate sum periods.", self.from_date, self.to_date)
         amounts_periods = []
         from_date = self._calculate_pro_ratas(amounts_periods)
-
         period = relativedelta(self.to_date, from_date)
         # For montly compounding convert years in duration to months
         if self.compound == "monthly":
@@ -403,8 +401,7 @@ class RunningInterest(object):
         for delta in improved_deltas:
             period = dict()
             period["from_date"] = delta[0]["from_date"]
-            period["to_date"] = (delta[1]["from_date"] -
-                                 relativedelta(days=1) 
+            period["to_date"] = (delta[1]["from_date"]
                                  if "from_date" in delta[1]
                                  else delta[1]["end_date"])
             if "balance_delta" in delta[0]:

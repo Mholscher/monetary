@@ -19,7 +19,7 @@ import sys
 import unittest
 from datetime import date, timedelta
 from models.interests import Interest, RunningInterest
-from tests.helpers import calc_3_tenths
+from tests.helpers import calc_3_tenths, idem
 
 class TestActualDaysInterest(unittest.TestCase):
 
@@ -507,7 +507,7 @@ class TestDeltaBalances(unittest.TestCase):
 
     def setUp(self):
         self.period_list = [{"from_date" : date(2022, 8, 14), 
-                "to_date" : date(2022, 10, 19),
+                "to_date" : date(2022, 10, 20),
                 "start_balance" : 12760000,
                 "interest_frac" : 0.04},
                 {"from_date" : date(2022, 10, 20), 
@@ -576,7 +576,7 @@ class TestDeltaBalances(unittest.TestCase):
         interest = RunningInterest(period_list, 
                  calculation_method=Interest.ACTUAL_PERIODS,
                  calendar_months=False, compound=None)
-        self.assertEqual(interest.amount_cents(), 76275,
+        self.assertEqual(interest.amount_cents(), 77678,
                          "Calculation of amount failed")
 
     def test_compound_calculation(self):
@@ -593,9 +593,43 @@ class TestDeltaBalances(unittest.TestCase):
         interest = RunningInterest(period_list, 
                  calculation_method=Interest.ACTUAL_PERIODS,
                  calendar_months=False, compound="monthly")
-        self.assertEqual(interest.amount_cents(), 76490,
-                         "Calculation of amount failed")
+        self.assertEqual(interest.amount_cents(), 77900,
+                         "Calculation of compounded amount failed")
 
+    def test_compound_actual_days(self):
+        """ A compound interest with actual days """
+
+        deltas_list = [{"from_date" : date(2022, 10, 7),
+                        "start_balance" : 130000,
+                        "interest_frac" : 0.09},
+                       {"from_date" : date(2022, 11, 10), 
+                        "balance_calculation" : calc_3_tenths,
+                        "interest_frac" : 0.08},
+                       {"end_date" : date(2022, 11, 18)}]
+        period_list = RunningInterest.create_periods(deltas_list)
+        interest = RunningInterest(period_list, 
+                 calculation_method=Interest.ACTUAL_DAYS,
+                 calendar_months=False, compound="monthly")
+        self.assertEqual(interest.amount_cents(), 1160,
+                         "Calculation of amount with actual days failed")
+
+    def test_compound_whole_months_actual_days(self):
+        """ A compound interest with actual days """
+
+        deltas_list = [{"from_date" : date(2022, 1, 1),
+                        "start_balance" : 155000,
+                        "interest_frac" : 0.1},
+                       {"from_date" : date(2022, 3, 1), 
+                        "balance_calculation" : idem,
+                        "interest_frac" : 0.09},
+                       {"end_date" : date(2022, 4, 1)}]
+        period_list = RunningInterest.create_periods(deltas_list)
+        interest = RunningInterest(period_list, 
+                 calculation_method=Interest.ACTUAL_DAYS,
+                 calendar_months=False, compound="monthly")
+        self.assertEqual(interest.amount_cents(), 3719,
+                         "Calculation of amount with actual days failed")
+    
 
 if __name__ == '__main__' :
     unittest.main()
