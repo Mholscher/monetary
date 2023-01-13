@@ -94,20 +94,20 @@ class Interest(object):
     def amount_cents(self):
         """ Return the interest amount """
 
-        self.use_balance = (self.balance_calculation(self.current_balance)
-                                if self.balance_calculation
-                                else self.start_balance)
+        use_balance = (self.balance_calculation(self.current_balance)
+                           if self.balance_calculation
+                           else self.start_balance)
         if (self.calculation_method == self.ACTUAL_DAYS
             and self.compound != "monthly"):
                 days = (self.to_date - self.from_date).days
-                amount_cents = (self.use_balance * self.interest_frac 
+                amount_cents = (use_balance * self.interest_frac 
                                 * days / 365)
         else:
-            amount_cents = self.calculate_sum_periods()
-        self.current_balance = self.use_balance + round(amount_cents)
+            amount_cents = self.calculate_sum_periods(use_balance)
+        self.current_balance = use_balance + round(amount_cents)
         return round(amount_cents)
 
-    def calculate_sum_periods(self):
+    def calculate_sum_periods(self, use_balance):
         """ Calculate the total amount of interest
 
         First we split the period in years, months and days. Calculate
@@ -115,7 +115,7 @@ class Interest(object):
         """
 
         amounts_periods = []
-        from_date = self._calculate_pro_ratas(amounts_periods)
+        from_date = self._calculate_pro_ratas(amounts_periods, use_balance)
         period = relativedelta(self.to_date, from_date)
         # For montly compounding convert years in duration to months
         if self.compound == "monthly":
@@ -124,12 +124,12 @@ class Interest(object):
 
         # Calculate full years of interest
         amounts_periods.append(round(
-                               period.years * self.use_balance *
+                               period.years * use_balance *
                                self.interest_frac))
 
         # Calculate months of interest
         if self.compound == "monthly":
-            current_balance = self.use_balance + sum(amounts_periods)
+            current_balance = use_balance + sum(amounts_periods)
             date_from = from_date
             for _ in range(period.months):
                 self.next_interest_date =\
@@ -148,7 +148,7 @@ class Interest(object):
                 current_balance = current_balance + interest_this_period
                 amounts_periods.append(interest_this_period)
         else:
-            monthly_amount = self.calc_month(self.use_balance,
+            monthly_amount = self.calc_month(use_balance,
                                              self.interest_frac)
             amounts_periods.append(period.months * monthly_amount)
 
@@ -165,7 +165,7 @@ class Interest(object):
                                       else self.next_interest_date)
         else:
             amounts_periods.append(round(
-                               days * self.use_balance        
+                               days * use_balance        
                                * self.interest_frac / 365))
         return sum(amounts_periods)
 
@@ -205,7 +205,7 @@ class Interest(object):
 
         return self._som(for_date) - relativedelta(days=1)
 
-    def _calculate_pro_ratas(self, amounts_periods):
+    def _calculate_pro_ratas(self, amounts_periods, use_balance):
         """ Calculate pro rata amounts in interest 
 
             :amounts_periods: amounts are updated with the amount, 
@@ -214,11 +214,12 @@ class Interest(object):
         """
 
         if self.calendar_months:
-            amounts_periods.append(self.calculate_prorata_at_start())
+            amounts_periods.append(
+                self.calculate_prorata_at_start(use_balance))
             from_date = self._som(self.from_date)
         else:
             if self.next_interest_date:
-                pro_rata_interest = self.pro_rata_interest()
+                pro_rata_interest = self.pro_rata_interest(use_balance)
                 amounts_periods.append(pro_rata_interest)
                 if pro_rata_interest != 0:
                     from_date=min(self.next_interest_date, self.to_date)
@@ -228,7 +229,7 @@ class Interest(object):
                 from_date = self.from_date
         return min(from_date, self.to_date)
 
-    def calculate_prorata_at_start(self):
+    def calculate_prorata_at_start(self, use_balance):
         """ Calculate the interest until the start of next month
 
         The use of this is for calculating interest on calendar months.
@@ -250,9 +251,9 @@ class Interest(object):
                 prorata_days = period.days
 
         return round(prorata_days * self.interest_frac *
-                     self.use_balance / 365)
+                     use_balance / 365)
 
-    def pro_rata_interest(self):
+    def pro_rata_interest(self, use_balance):
         """ Calculate the pro rata interest until an early interest date
 
         This is for the RunningInterest, where the interest until the
@@ -265,7 +266,7 @@ class Interest(object):
             return 0
 
         if self.calculation_method == self.ACTUAL_DAYS:
-            return (round(self.use_balance * 
+            return (round(use_balance * 
                           self.interest_frac
                           * (min(self.next_interest_date, self.to_date)
                           - self.from_date).days / 365))
@@ -274,7 +275,7 @@ class Interest(object):
             raise ValueError("Next interest date must be < 1 month away")
 
         return (round(period.days * self.interest_frac *
-                     self.use_balance / 365))
+                     use_balance / 365))
 
     @classmethod
     def calc_month(cls, amount_cents, interest_fraction):
