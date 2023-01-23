@@ -20,3 +20,9 @@ Interest calculations
 
 .. automodule:: models.interests
    :members:
+
+Annuity calculations
+--------------------
+
+.. automodule:: models.annuity
+   :members:

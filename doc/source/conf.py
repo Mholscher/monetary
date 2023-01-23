@@ -13,7 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
-sys.path.insert(1, os.path.abspath('../../debtors'))
+sys.path.insert(1, os.path.abspath('../../monetary'))
 
 
 # -- Project information -----------------------------------------------------
@@ -58,6 +58,9 @@ master_doc = 'index'
 
 # -- Options for HTML output -------------------------------------------------
 
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
@@ -68,5 +71,3 @@ html_theme = 'haiku'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-# The master toctree document.
-master_doc = 'index'
