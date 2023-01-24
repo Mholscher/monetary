@@ -17,3 +17,12 @@ The first calculation that will be made is the calculation of the amount of the 
 The monthly amount is calculated through the formula:
 
     monthly amount = P * (r/(1-(1+r)⁻n))
+
+.. _annuityobject:
+
+Getting more information about the annuity
+------------------------------------------
+
+To be able to get more information about the annuity, we can create an annuity instance. The instance supplies us with a list of the payments, divided into interest and principal repayment. Also this of course returns the final payment, which is usually different from the previous payments.
+
+The interest over the previous period is calculated through the monthly interest routines from the package. The principal part for all periods but the last one is the annuity amount minus the calculated interest.

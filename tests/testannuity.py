@@ -63,3 +63,49 @@ class TestMonthlyPayment(unittest.TestCase):
                              interest_frac=0,
                              number_periods=85)
         self.assertEqual(payment, 118, "Incorrect amount")
+
+
+class TestAnnuityClass(unittest.TestCase):
+
+    def setUp(self):
+
+        self.principal = 15_000_000
+        self.interest_frac = .06
+        self.number_periods = 96
+        self.annuity = Annuity(principal=self.principal,
+                               interest_frac=self.interest_frac,
+                               number_periods=self.number_periods)
+
+    def test_setup_object(self):
+        """ Create annuity object """
+
+        annuity = Annuity(principal=self.principal,
+                          interest_frac=self.interest_frac,
+                          number_periods=self.number_periods)
+        self.assertTrue(annuity, "No annuity created")
+
+    def test_no_zero_principal(self):
+        """ Cannot create an annuity without principal """
+
+        with self.assertRaises(ValueError):
+            annuity = Annuity(principal=0,
+                              interest_frac=self.interest_frac,
+                              number_periods=self.number_periods)
+
+    def test_no_zero_periods(self):
+        """ An annuity must have positive duration """
+
+        with self.assertRaises(ValueError):
+            annuity = Annuity(principal=self.principal,
+                              interest_frac=self.interest_frac,
+                              number_periods=0)
+        with self.assertRaises(ValueError):
+            annuity = Annuity(principal=self.principal,
+                              interest_frac=self.interest_frac,
+                              number_periods=-5)
+
+    def test_return_monthly_payment(self):
+        """ The monthly payment can be calculated """
+
+        self.assertEqual(self.annuity.monthly_payment(), 903361,
+                         "Payment not correctly calculated")

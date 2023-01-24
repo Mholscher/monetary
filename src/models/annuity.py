@@ -32,7 +32,7 @@ class InterestRequiredError(ValueError):
 
     pass
 
-class NumberPeriodsRequiredError(ValueError):
+class NumberPeriodsMustBePositiveError(ValueError):
     """ The number of months is required """
 
     pass
@@ -40,9 +40,23 @@ class NumberPeriodsRequiredError(ValueError):
 class Annuity():
     """ This class holds annuity calculations and results """
 
-    def __init__():
+    def __init__(self, principal=0, interest_frac=0,
+                 number_periods=1):
 
-        pass
+        if not principal:
+            raise PrincipalRequiredError()
+        if number_periods <= 0:
+            raise NumberPeriodsMustBePositiveError()
+        self.principal = principal
+        self.interest_frac = interest_frac
+        self.number_periods = number_periods
+
+    def monthly_payment(self):
+        """ The monthly payment for this annuity """
+
+        return self.calc_payment(self.principal,
+                                 self.interest_frac,
+                                 self.number_periods)
 
     @staticmethod
     def calc_payment(principal=0, interest_frac=0.0, number_periods=1):
@@ -54,7 +68,7 @@ class Annuity():
             raise InterestRequiredError(
                 "Interest fraction must be a number")
         if not number_periods:
-            raise NumberPeriodsRequiredError(
+            raise NumberPeriodsMustBePositiveError(
                 "Number of periods must be a number > 0")
         if interest_frac == 0:
             return round(principal/number_periods)
