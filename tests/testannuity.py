@@ -34,7 +34,7 @@ class TestMonthlyPayment(unittest.TestCase):
         self.assertEqual(Annuity.calc_payment(principal=principal,
                                               interest_frac=interest_frac,
                                               number_periods=number_periods),
-                         800078, "Cannot calculate payment amount")
+                         121328, "Cannot calculate payment amount")
 
     def test_parms_required(self):
         """ All parameters are required """
@@ -107,5 +107,27 @@ class TestAnnuityClass(unittest.TestCase):
     def test_return_monthly_payment(self):
         """ The monthly payment can be calculated """
 
-        self.assertEqual(self.annuity.monthly_payment(), 903361,
+        self.assertEqual(self.annuity.monthly_payment(), 197121,
                          "Payment not correctly calculated")
+
+class TestCalculateHistory(unittest.TestCase):
+
+    def setUp(self):
+
+        self.principal = 15_000_000
+        self.interest_frac = .06
+        self.number_periods = 96
+        self.annuity = Annuity(principal=self.principal,
+                               interest_frac=self.interest_frac,
+                               number_periods=self.number_periods)
+
+    def test_return_interest_principals(self):
+        """ Return the interest and principals """
+
+        annuity = Annuity(principal=120000,
+                          interest_frac=0.03,
+                          number_periods=20)
+        self.assertEqual(annuity.payment_schedule()[6],
+                         (17, 6142), "Incorrect amount")
+        self.assertEqual(annuity.payment_schedule()[19],
+                         (1, 3234), "Incorrect last month")

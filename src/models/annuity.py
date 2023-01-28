@@ -22,6 +22,8 @@ repayment amounts per period as well as the "final payment", which makes
 the annuity fully repaid.
 """
 
+from models.interests import Interest
+
 class PrincipalRequiredError(ValueError):
     """ The annuity principal is required """
 
@@ -58,6 +60,25 @@ class Annuity():
                                  self.interest_frac,
                                  self.number_periods)
 
+    def payment_schedule(self):
+        """ Calculate the principals and interest amount for all months """
+
+        monthly = self.monthly_payment()
+        remaining_principal = self.principal
+        monthly_interest_frac = self.interest_frac / 12
+        monthly_amount_split = []
+        for _ in range(self.number_periods - 1):
+            interest = Interest.calc_month(remaining_principal,
+                                           monthly_interest_frac)
+            repayment = monthly - interest
+            monthly_amount_split.append((interest, repayment))
+            remaining_principal = remaining_principal - repayment
+        interest = Interest.calc_month(remaining_principal,
+                                       monthly_interest_frac)
+        monthly_amount_split.append((interest, 
+                                     remaining_principal - interest))
+        return monthly_amount_split
+
     @staticmethod
     def calc_payment(principal=0, interest_frac=0.0, number_periods=1):
         """ Calculate the monthly amount payable for an annuity """
@@ -72,5 +93,6 @@ class Annuity():
                 "Number of periods must be a number > 0")
         if interest_frac == 0:
             return round(principal/number_periods)
+        interest_frac = interest_frac / 12
         return round(principal * (interest_frac /
                          (1-(1+interest_frac)**(-number_periods))))
