@@ -64,6 +64,13 @@ class TestMonthlyPayment(unittest.TestCase):
                              number_periods=85)
         self.assertEqual(payment, 118, "Incorrect amount")
 
+    def test_single_period_annuity(self):
+        """ Calculate the payable for a single period annuity """
+
+        payment = Annuity.calc_payment(principal=10000,
+                             interest_frac=0.04,
+                             number_periods=1)
+        self.assertEqual(payment, 10033, "Incorrect amount")
 
 class TestAnnuityClass(unittest.TestCase):
 
@@ -131,3 +138,12 @@ class TestCalculateHistory(unittest.TestCase):
                          (17, 6142), "Incorrect amount")
         self.assertEqual(annuity.payment_schedule()[19],
                          (1, 3234), "Incorrect last month")
+
+    def test_last_installment(self):
+        """ Return the last installment """
+
+        annuity = Annuity(principal=1350000,
+                          interest_frac=0.09,
+                          number_periods=12)
+        self.assertEqual(annuity.last_month_payment(),
+                         56579, "Incorrect last month")

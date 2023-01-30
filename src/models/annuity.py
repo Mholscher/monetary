@@ -79,6 +79,12 @@ class Annuity():
                                      remaining_principal - interest))
         return monthly_amount_split
 
+    def last_month_payment(self):
+        """ Calculate the last month (pro rata) payment """
+
+        last_month_amounts = self.payment_schedule()[-1]
+        return sum(last_month_amounts)
+
     @staticmethod
     def calc_payment(principal=0, interest_frac=0.0, number_periods=1):
         """ Calculate the monthly amount payable for an annuity """
