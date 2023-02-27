@@ -135,9 +135,9 @@ class TestCalculateHistory(unittest.TestCase):
                           interest_frac=0.03,
                           number_periods=20)
         self.assertEqual(annuity.payment_schedule()[6],
-                         (17, 6142), "Incorrect amount")
+                         (209, 5950), "Incorrect amount")
         self.assertEqual(annuity.payment_schedule()[19],
-                         (1, 3234), "Incorrect last month")
+                         (15, 6078), "Incorrect last month")
 
     def test_last_installment(self):
         """ Return the last installment """
@@ -146,4 +146,4 @@ class TestCalculateHistory(unittest.TestCase):
                           interest_frac=0.09,
                           number_periods=12)
         self.assertEqual(annuity.last_month_payment(),
-                         56579, "Incorrect last month")
+                         114496, "Incorrect last month")

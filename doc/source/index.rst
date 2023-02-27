@@ -12,6 +12,7 @@ Welcome to the Monetary library documentation!
    Monetary
    Interest
    Annuity
+   Interpolate
    MonetaryAPI
 
 Indices and tables

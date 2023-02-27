@@ -69,12 +69,12 @@ class Annuity():
         monthly_amount_split = []
         for _ in range(self.number_periods - 1):
             interest = Interest.calc_month(remaining_principal,
-                                           monthly_interest_frac)
+                                           self.interest_frac)
             repayment = monthly - interest
             monthly_amount_split.append((interest, repayment))
             remaining_principal = remaining_principal - repayment
         interest = Interest.calc_month(remaining_principal,
-                                       monthly_interest_frac)
+                                       self.interest_frac)
         monthly_amount_split.append((interest, 
                                      remaining_principal - interest))
         return monthly_amount_split
