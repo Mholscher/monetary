@@ -26,3 +26,9 @@ Annuity calculations
 
 .. automodule:: models.annuity
    :members:
+
+Interpolation of amounts
+------------------------
+
+.. automodule:: models.interpolate
+   :members:

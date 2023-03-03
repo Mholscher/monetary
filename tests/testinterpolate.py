@@ -15,6 +15,10 @@
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with monetary.  If not, see <http://www.gnu.org/licenses/>.
 
+""" This module contains a function that linearly interpolates an amount
+    between two dates and an amounts. The "interpolation is linear" means
+    that it spreads it as described in :ref:`interpolation`
+    """
 
 import sys
 import unittest
@@ -67,6 +71,17 @@ class TestInterpolation_calcs(unittest.TestCase):
         dates = [date(2022, 7, 5)]
         with self.assertRaises(ValueError):
             values = interpolate(start_data, end_data, dates)
+
+    def test_deprecate_good(self):
+        """ Deprecate a capital good """
+
+        start_data = (date(2023, 10, 6), 670000)
+        end_data = (date(2028, 10, 6), 10000)
+        dates = [date(2024, 1, 1), date(2025, 1, 1), date(2026, 1, 1),
+                 date(2027, 1, 1), date(2028, 1, 1)]
+        values = interpolate(start_data, end_data, dates)
+        self.assertEqual(len(values), 5, "Wrong number of values")
+
 
 
 if __name__ == '__main__' :

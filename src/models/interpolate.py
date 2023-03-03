@@ -14,9 +14,11 @@
 
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with monetary.  If not, see <http://www.gnu.org/licenses/>.
+
 """ This module contains a linear interpolation function for amounts
-over a fixed period and for one or more dates
-"""
+    over a fixed period and for one or more dates. 
+    """
+
 from datetime import date, timedelta
 
 def interpolate(start_from, end_to, requested_dates):
