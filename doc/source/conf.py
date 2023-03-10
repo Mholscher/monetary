@@ -19,7 +19,7 @@ sys.path.insert(1, os.path.abspath('../../monetary'))
 # -- Project information -----------------------------------------------------
 
 project = 'The monetary library'
-copyright = '2019-2020, Menno Hölscher'
+copyright = '2019-2023, Menno Hölscher'
 author = 'Menno Hölscher'
 
 # The full version, including alpha/beta/rc tags

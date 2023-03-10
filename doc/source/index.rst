@@ -13,6 +13,7 @@ Welcome to the Monetary library documentation!
    Interest
    Annuity
    Interpolate
+   Deprecation
    MonetaryAPI
 
 Indices and tables
