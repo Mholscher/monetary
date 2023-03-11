@@ -100,3 +100,12 @@ class TestDeprecation(unittest.TestCase):
                          "Value after deprecation incorrect")
         self.assertEqual(schedule.value_at(date(2040, 2, 2)), 4500,
                          "Value long after deprecation incorrect")
+
+    def test_with_other_reporting_date(self):
+        """ The reporting dates are not on the first of January """
+
+        schedule = DeprecationSchedule(220000, date(2023, 2, 20),
+                                       date(2023, 4,1), 9)
+        self.assertEqual(schedule.value_at(date(2025, 8, 2)), 167038,
+                         "Value after deprecation incorrect")
+        

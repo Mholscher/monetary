@@ -32,7 +32,7 @@ Deprecation can be done on different bases, using different schemata. You may de
 Deprecating linearly over a fixed period
 ----------------------------------------
 
-The linear deprecation will be supported. To be able to do that we need the purchase price (value at start), the schema (over what periods the deprecation will be done) and the remaining value of the asset at the end of the period.
+The linear deprecation will be the default method. To be able to do that we need the purchase price (value at start), the schema (over what periods the deprecation will be done) and the remaining value of the asset at the end of the period.
 
 The deprecation will be done in the following way:
 
