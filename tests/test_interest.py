@@ -18,7 +18,7 @@
 import sys
 import unittest
 from datetime import date, timedelta
-from models.interests import Interest, RunningInterest
+from monetary_models.interests import Interest, RunningInterest
 from tests.helpers import calc_3_tenths, idem
 
 class TestActualDaysInterest(unittest.TestCase):

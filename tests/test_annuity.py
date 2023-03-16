@@ -17,7 +17,7 @@
 
 import sys
 import unittest
-from models.annuity import Annuity
+from monetary_models.annuity import Annuity
 
 class TestMonthlyPayment(unittest.TestCase):
 

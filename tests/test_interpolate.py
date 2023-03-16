@@ -23,7 +23,7 @@
 import sys
 import unittest
 from datetime import date
-from models.interpolate import interpolate
+from monetary_models.interpolate import interpolate
 
 class TestInterpolation_calcs(unittest.TestCase):
 

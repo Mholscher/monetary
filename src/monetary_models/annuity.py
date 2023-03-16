@@ -22,7 +22,7 @@ repayment amounts per period as well as the "final payment", which makes
 the annuity fully repaid.
 """
 
-from models.interests import Interest
+from monetary_models.interests import Interest
 
 class PrincipalRequiredError(ValueError):
     """ The annuity principal is required """

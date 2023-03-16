@@ -22,7 +22,7 @@ import sys
 import unittest
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from models.deprecate import DeprecationSchedule
+from monetary_models.deprecate import DeprecationSchedule
 
 class TestDeprecation(unittest.TestCase):
 

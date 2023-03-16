@@ -18,11 +18,11 @@
 import sys
 import unittest
 import locale
-from views.monetary import edited_amount, internal_amount, validate_amount
+from monetary_views.monetary import edited_amount, internal_amount, validate_amount
 from helpers import MultiDict #code from WTForms
 #from debtors import app #TODO Remove dependancy of debtors
 
-from views.wtformsmonetary import AmountField
+from monetary_views.wtformsmonetary import AmountField
 try:
     from wtforms import Form, StringField
     wtforms_present = True
