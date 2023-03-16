@@ -4,13 +4,13 @@ Monetary API
 Monetary views
 --------------
 
-.. automodule:: views.monetary
+.. automodule:: monetary_views.monetary
    :members:
 
 Monetary WTForms views
 ----------------------
 
-.. automodule:: views.wtformsmonetary
+.. automodule:: monetary_views.wtformsmonetary
    :members:
 
 .. _apiinterestcalculations:
@@ -18,23 +18,23 @@ Monetary WTForms views
 Interest calculations
 ---------------------
 
-.. automodule:: models.interests
+.. automodule:: monetary_models.interests
    :members:
 
 Annuity calculations
 --------------------
 
-.. automodule:: models.annuity
+.. automodule:: monetary_models.annuity
    :members:
 
 Interpolation of amounts
 ------------------------
 
-.. automodule:: models.interpolate
+.. automodule:: monetary_models.interpolate
    :members:
 
 Deprecating capital goods
 -------------------------
 
-.. automodule:: models.deprecate
+.. automodule:: monetary_models.deprecate
    :members:   
