@@ -25,7 +25,7 @@ Capital goods are an asset to companies over a long period. When you buy a machi
 
 Deprecation is the term pointing at this process. At the time of purchase the capital good appears in the books valued at the purchase price. Later, usually at the closing of the reporting year, it is revalued, the difference between the "new" value and the "previous" value being the deprecation. At the end there is a remaining value, which is not deprecated further. 
 
-Deprecation can be done on different bases, using different schemata. You may deprecate linearly, departing from the purchase price. Also you may determine the cost of replacing the asset with a new one, and base the deprecation on that price. Also you can deprecate fast in the beginning and slower towards the end of the period, to take into account the higher chances of needing to replace it near the end  of the period.
+Deprecation can be done on different bases, using different schemata. You may deprecate linearly, departing from the purchase price. Also you may determine the cost of replacing the asset with a new one, and base the deprecation on that price. Also you can deprecate fast in the beginning and slower towards the end of the period, to take into account the higher chances of (economically) needing to replace it near the end  of the period.
 
 .. _lineardeprecation:
 
@@ -40,3 +40,13 @@ The deprecation will be done in the following way:
     - at the reporting date the value is deprecated by the number of months (rounded up to full months) divided by 12 times the yearly deprecation
     - from then on each reporting date the yearly deprecation takes places until the en of the period. From then on the value is reported as the rest value.
 
+.. _otherdeprecation:
+
+Using a different method of deprecation: example
+------------------------------------------------
+
+The calculation can accommodate a different method of deprecation. The things that will change are to the calculation of the deprecation amounts as well as the calculation of the basis, like having a deprecation based on the cost of replacing the asset.
+
+We do not know exactly what parameters are being passed into the calculation, so we will be changing the parameters to be largely dependent on the used method.
+
+As an example we will implement a method where the replacement cost of the asset influences the deprecation. Each year the replacement cost for the asset is determined and the  deprecation for the current period is calculated based on this. Also a correction is calculated for the periods where deprecation has already been calculated. As  for the accounting the deprecation for the correction is posted different from the amount of deprecation for this period, they will be kept separate.

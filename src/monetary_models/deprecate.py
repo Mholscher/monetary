@@ -26,6 +26,21 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 class DeprecationSchedule():
+    """ This models the schedule for deprecating an asset
+
+    The parameters must be enough to create the complete schedule, as it
+    is constructed at the time that the instance is created.
+
+        :purchase_amount: the original cost of the asset
+        :purchase_date: The date the asset was purchased and the start of the deprecation schedule
+        :first_reporting_date: The first date deprecation should be performed
+        :deprecate_years: the number of years the asset will be deprecated;  after this period a rest value may remain (see next parameter)
+        :value_at_end: the monetary value of the asset at the end of the deprecation period.
+
+    These parameters apply to the default deprecation method. They may be
+    different for other methods. See the example supplied for the method
+    where each year the asset is revalued.
+    """
 
     def __init__(self, purchase_amount, purchase_date=date.today(),
                        first_reporting_date=date.today(), deprecate_years=5,
@@ -75,9 +90,8 @@ class DeprecationSchedule():
         """ Return the value of the asset at the requested date
 
         From the purchase amount subtract all deprecation between the
-        purchase date and the date passed in
-
-        Dates before the purchase date are invalid.
+        purchase date and the date passed in. Dates before the purchase date
+        are invalid.
         """
 
         current_value = self.purchase_amount

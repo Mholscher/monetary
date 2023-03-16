@@ -32,3 +32,9 @@ Interpolation of amounts
 
 .. automodule:: models.interpolate
    :members:
+
+Deprecating capital goods
+-------------------------
+
+.. automodule:: models.deprecate
+   :members:   
