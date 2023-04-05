@@ -50,3 +50,7 @@ The calculation can accommodate a different method of deprecation. The things th
 We do not know exactly what parameters are being passed into the calculation, so we will be changing the parameters to be largely dependent on the used method.
 
 As an example we will implement a method where the replacement cost of the asset influences the deprecation. Each year the replacement cost for the asset is determined and the  deprecation for the current period is calculated based on this. Also a correction is calculated for the periods where deprecation has already been calculated. As  for the accounting the deprecation for the correction is posted different from the amount of deprecation for this period, they will be kept separate.
+
+    - An asset is bought for 120000 units and deprecated over 6 years. In the first year it is deprecated for 1/6th of the value, i.e. 20000.
+    - Start of the second year the replacement of the asset would cost 140000. this means that now the deprecation would be 1/6th of 140000, i.e. 23333. We reserve that for the replacement in the current year, but also add 3333 to the reserve for the first year.
+    - Start of the third year, replacement of the asset is estimated at 132000. the yearly deprecation is changed to 22000 and for the two years gone, the reserve is lowered by 1333 per year, i.e. 2666 in total. The reserve is updated as one total, not split by year.
