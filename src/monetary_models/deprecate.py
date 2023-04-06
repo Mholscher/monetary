@@ -58,7 +58,7 @@ class DeprecationSchedule():
 
     def _create_schedule(self):
         """ From the current data create the deprecation schedule """
-        import pdb; pdb.set_trace()
+
         self.amounts = []
         self.amounts.append((self.purchase_date, 0))
         next_reporting_date = self.first_reporting_date
@@ -68,10 +68,17 @@ class DeprecationSchedule():
                                     self.value_at_end) /
                                    self.deprecate_years)
         current_value =  self.purchase_amount
-
-        first_period_deprecation = ((first_period.months + 1) *
-                            yearly_deprecation // 12)
-        self.amounts.append((next_reporting_date, first_period_deprecation))
+        
+        if first_period.months or first_period.days:
+            first_period_deprecation = ((first_period.months + 1) *
+                                        yearly_deprecation // 12
+                                        if first_period.days != 0
+                                        else first_period.months *
+                                        yearly_deprecation // 12)
+            self.amounts.append(
+                (next_reporting_date, first_period_deprecation))
+        else:
+            first_period_deprecation = 0
         current_value -= first_period_deprecation
         while next_reporting_date < (self.purchase_date +
                                      relativedelta(years=

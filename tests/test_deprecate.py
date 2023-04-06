@@ -109,3 +109,20 @@ class TestDeprecation(unittest.TestCase):
         self.assertEqual(schedule.value_at(date(2025, 8, 2)), 167038,
                          "Value after deprecation incorrect")
         
+    def test_purchase_on_reporting_date(self):
+        """ Purchase of an asset on a reporting date is correct """
+
+        schedule = DeprecationSchedule(120000, date(2022, 1, 1),
+                                       date(2022, 1,1), 5)
+        self.assertEqual(schedule.value_at(date(2023, 1, 1)), 96000,
+                         "Value after 1st period incorrect")
+        self.assertEqual(schedule.value_at(date(2040, 2, 2)), 0,
+                         "Value long after deprecation incorrect")
+
+    def test_day_equal_month_unequal(self):
+        """ For the purchase being a whole no of months from reporting  """
+
+        schedule = DeprecationSchedule(120000, date(2022, 9, 1),
+                                       date(2023, 1,1), 5)
+        self.assertEqual(schedule.value_at(date(2023, 1, 1)), 112000,
+                         "Value after 1st period incorrect")

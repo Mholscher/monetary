@@ -35,7 +35,6 @@ class TestDeprecate_recalc(unittest.TestCase):
                                          first_reporting_date=
                                          date(2023, 1, 1),
                                          deprecate_years=6)
-        print(deprecation_schedule.amounts)
         self.assertEqual(deprecation_schedule.amounts[1][1], 20000,
                          "Wrong amount first year at start")
         
