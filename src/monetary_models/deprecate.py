@@ -44,7 +44,7 @@ class DeprecationSchedule():
 
     def __init__(self, purchase_amount, purchase_date=date.today(),
                        first_reporting_date=date.today(), deprecate_years=5,
-                       value_at_end=0):
+                       value_at_end=0, **kwargs):
 
         self.purchase_amount = purchase_amount
         self.purchase_date = purchase_date
@@ -68,7 +68,7 @@ class DeprecationSchedule():
                                     self.value_at_end) /
                                    self.deprecate_years)
         current_value =  self.purchase_amount
-        
+
         if first_period.months or first_period.days:
             first_period_deprecation = ((first_period.months + 1) *
                                         yearly_deprecation // 12
