@@ -35,7 +35,7 @@ class TestDeprecate_recalc(unittest.TestCase):
                                          first_reporting_date=
                                          date(2023, 1, 1),
                                          deprecate_years=6)
-        self.assertEqual(deprecation_schedule.amounts[1][1], 20000,
+        self.assertEqual(deprecation_schedule.amounts[2][1], 20000,
                          "Wrong amount first year at start")
 
     def test_second_deprecation(self):
@@ -53,7 +53,7 @@ class TestDeprecate_recalc(unittest.TestCase):
                                          replacement_value=
                                          140000,
                                          deprecate_years=6)
-        self.assertEqual(deprecation_schedule.new_amounts[2][1], 23333,
+        self.assertEqual(deprecation_schedule.new_amounts[3][1], 23333,
                          "Wrong amount second year")
 
     def test_correct_previous_period(self):
@@ -74,9 +74,24 @@ class TestDeprecate_recalc(unittest.TestCase):
                          3333,
                          "incorrect correction")
 
+    def test_no_correction_needed(self):
+        """ If no change yet, no correction needed """
+
+        deprecation_schedule =\
+            ex.RecalcDeprecationSchedule(120000,
+                                         date(2023, 1, 1),
+                                         first_reporting_date=
+                                         date(2023, 1, 1),
+                                         calculation_date=
+                                         date(2024, 1, 1),
+                                         deprecate_years=6)
+        self.assertEqual(deprecation_schedule.correction(),
+                         0,
+                         "No correction should be present")
+        
+
 class TestBeyondSecondYear(unittest.TestCase):
 
-    
     def test_third_year_deprecation(self):
         """ Next period deprecation """
 
@@ -91,9 +106,52 @@ class TestBeyondSecondYear(unittest.TestCase):
                                          replacement_value=
                                          132000,
                                          deprecate_years=6)
-        self.assertEqual(deprecation_schedule.new_amounts[2][1], 22000,
+        self.assertEqual(deprecation_schedule.new_amounts[3][1], 22000,
                          "Wrong amount later year")
         self.assertEqual(deprecation_schedule.correction(),
                          -2666,
                          "incorrect correction later year")
-        
+    def test_before_revalue(self):
+        """ Deprecation for 9 years with all issues """
+
+        deprecation_schedule =\
+            ex.RecalcDeprecationSchedule(117000,
+                                         date(2022, 6, 1),
+                                         first_reporting_date=
+                                         date(2023, 1, 1),
+                                         calculation_date=
+                                         date(2023, 1, 1),
+                                         replacement_value=
+                                         117000,
+                                         value_at_end=3000,
+                                         deprecate_years=9)
+        self.assertEqual(deprecation_schedule.amounts[1][1], 7389,
+                         "Wrong amount pro rata period")
+        self.assertEqual(deprecation_schedule.new_amounts[1][1], 7389,
+                         "Wrong amount pro rata period")
+        self.assertEqual(deprecation_schedule.new_amounts[2][1], 12667,
+                         "Wrong amount first period")
+        self.assertEqual(deprecation_schedule.correction(), 0,
+                         "Correction after no revalue")
+
+    def test_after_revalue(self):
+        """ Deprecation for 9 years with all issues """
+
+        deprecation_schedule =\
+            ex.RecalcDeprecationSchedule(117000,
+                                         date(2022, 6, 1),
+                                         first_reporting_date=
+                                         date(2023, 1, 1),
+                                         calculation_date=
+                                         date(2025, 1, 1),
+                                         previous_yearly_deprecation=12667,
+                                         replacement_value=
+                                         123000,
+                                         value_at_end=3000,
+                                         deprecate_years=9)
+        self.assertEqual(deprecation_schedule.amounts[4][1], 12667,
+                         "Wrong amount pro rata period")
+        self.assertEqual(deprecation_schedule.new_amounts[4][1], 13333,
+                         "Wrong amount period of recalculation")
+        self.assertEqual(deprecation_schedule.correction(), 1721,
+                         "Correction incorrect after revalue")

@@ -38,3 +38,9 @@ Deprecating capital goods
 
 .. automodule:: monetary_models.deprecate
    :members:   
+
+Deprecating capital goods with a flexible schedule
+--------------------------------------------------
+
+.. automodule:: monetary_models.deprecate_example
+   :members:

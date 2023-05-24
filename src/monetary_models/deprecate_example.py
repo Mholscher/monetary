@@ -30,6 +30,13 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
 
     We revalue each reporting date and not only calculate the new deprecation
     amount, but also the correction over previous periods.
+
+    The schedule entries are made up from:
+
+        :reporting_date: The date for which the new deprecations are calculated
+        :deprecation_amount: The new deprecation amount
+        :delta_deprecation: difference with previous amount of deprecation, for periods before the current reporting date
+
     """
 
     def __init__(self, purchase_amount, purchase_date=date.today(),
@@ -49,11 +56,13 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
                                      if "previous_yearly_deprecation"in kwargs
                                      else 0)
         self._recalculate_amount()
+        #print(self.new_amounts)
 
     def _recalculate_amount(self):
         """ Recalculate the deprecation and calculate the correction """
 
         self.new_amounts = []
+        self.new_amounts.append((self.purchase_date, 0, 0))
         current_value = self.purchase_amount
         first_period = relativedelta(self.first_reporting_date,
                                      self.purchase_date)
@@ -100,8 +109,11 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
 
     def correction(self):
         """ Return the correction for the whole deprecation period  """
-
+        #import pdb; pdb.set_trace()
         periods = relativedelta(self.calculation_date, self.purchase_date)
-        return round(((round((self.replacement_value -self.value_at_end) /
-                   self.deprecate_years)) - self.previous_yearly_deprecation)
-                    * (periods.years + periods.months / 12))
+        if self.replacement_value != self.purchase_amount:
+            return round((((self.replacement_value -self.value_at_end) /
+                        self.deprecate_years) - self.previous_yearly_deprecation)
+                        * (periods.years + periods.months / 12))
+        else:
+            return 0
