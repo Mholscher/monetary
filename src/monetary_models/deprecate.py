@@ -102,6 +102,8 @@ class DeprecationSchedule():
         """
 
         current_value = self.purchase_amount
+        if requested_date < self.purchase_date:
+            return 0
         for deprecation_period, amount in enumerate(self.amounts):
             if amount[0] <= requested_date:
                 current_value -= amount[1]

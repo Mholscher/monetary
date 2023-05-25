@@ -155,3 +155,54 @@ class TestBeyondSecondYear(unittest.TestCase):
                          "Wrong amount period of recalculation")
         self.assertEqual(deprecation_schedule.correction(), 1721,
                          "Correction incorrect after revalue")
+
+class TestCheckParameters(unittest.TestCase):
+
+    def test_no_replacement_value_at_purchase(self):
+        """ Cannot have replacement value at purchase """
+
+        with self.assertRaises(ValueError):
+            deprecation_schedule =\
+                ex.RecalcDeprecationSchedule(155000,
+                                            date(2022, 8, 3),
+                                            first_reporting_date=
+                                            date(2023, 1, 1),
+                                            calculation_date=
+                                            date(2022, 8, 3),
+                                            replacement_value=
+                                            163000,
+                                            value_at_end=3800,
+                                            deprecate_years=10)
+
+    def test_no_previous_year_deprecation(self):
+        """ At start there cannot be previous year deprecation  """
+
+        with self.assertRaises(ValueError):
+            deprecation_schedule =\
+                ex.RecalcDeprecationSchedule(175000,
+                                            date(2022, 7, 3),
+                                            first_reporting_date=
+                                            date(2023, 1, 1),
+                                            calculation_date=
+                                            date(2022, 7, 3),
+                                            previous_yearly_deprecation=
+                                            12000,
+                                            value_at_end=3800,
+                                            deprecate_years=10)
+
+    def test_calculation_before_purchase(self):
+        """ The calculation date is before the purchase date """
+
+        deprecation_schedule =\
+            ex.RecalcDeprecationSchedule(188000,
+                                        date(2023, 2, 1),
+                                        first_reporting_date=
+                                        date(2024, 1, 1),
+                                        calculation_date=
+                                        date(2023, 2, 1),
+                                        value_at_end=3800,
+                                        deprecate_years=10)
+        self.assertEqual(deprecation_schedule.value_at(date(2022, 10, 1)),
+                         0,
+                         "Value before purchase calculated")
+                                                       

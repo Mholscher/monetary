@@ -126,3 +126,12 @@ class TestDeprecation(unittest.TestCase):
                                        date(2023, 1,1), 5)
         self.assertEqual(schedule.value_at(date(2023, 1, 1)), 112000,
                          "Value after 1st period incorrect")
+
+    def test_value_before_start(self):
+        """ Value before purchase should return zero """
+
+        schedule = DeprecationSchedule(126000, date(2022, 9, 7),
+                                       date(2023, 1,1), 5)
+        self.assertEqual(schedule.value_at(date(2022, 8, 1)), 0,
+                         "Value before purchase != zero")        
+        

@@ -25,6 +25,15 @@ from dataclasses import dataclass
 from dateutil.relativedelta import relativedelta
 from monetary_models.deprecate import DeprecationSchedule
 
+class ReplacementValueAtPurchaseDateError(ValueError):
+    """ Cannot have a separate replacement value at purchase date """
+
+    pass
+
+class PreviousDeprecationAtPurchaseDateError(ValueError):
+    """ Cannot have previous deprecation at purchase date """
+
+    pass
 class RecalcDeprecationSchedule(DeprecationSchedule):
     """ The schedule for a deprecation with revaluing each report date
 
@@ -51,10 +60,18 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
                                     else purchase_date)
         self.replacement_value = (kwargs["replacement_value"] 
                                      if "replacement_value"in kwargs
-                                     else purchase_amount)
+                                     else 0)
         self.previous_yearly_deprecation = (kwargs["previous_yearly_deprecation"] 
                                      if "previous_yearly_deprecation"in kwargs
                                      else 0)
+        if (self.calculation_date == self.purchase_date
+            and self.replacement_value):
+            raise ReplacementValueAtPurchaseDateError(
+                "Cannot have replacement value at purchase date")
+        if (self.calculation_date == self.purchase_date
+            and self.previous_yearly_deprecation):
+            raise PreviousDeprecationAtPurchaseDateError(
+                "Cannot have previous deprecation at purchase date")
         self._recalculate_amount()
         #print(self.new_amounts)
 
@@ -99,6 +116,8 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
     def value_at(self, requested_date):
         """ Get the value at the date for the changed schedule """
 
+        if requested_date < self.purchase_date:
+            return 0
         current_value = self.purchase_amount
         for deprecation_period, amount in enumerate(self.new_amounts):
             if amount[0] <= requested_date:
@@ -109,7 +128,7 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
 
     def correction(self):
         """ Return the correction for the whole deprecation period  """
-        #import pdb; pdb.set_trace()
+
         periods = relativedelta(self.calculation_date, self.purchase_date)
         if self.replacement_value != self.purchase_amount:
             return round((((self.replacement_value -self.value_at_end) /
