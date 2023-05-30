@@ -118,13 +118,7 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
 
         if requested_date < self.purchase_date:
             return 0
-        current_value = self.purchase_amount
-        for deprecation_period, amount in enumerate(self.new_amounts):
-            if amount[0] <= requested_date:
-                current_value -= amount[1]
-            else:
-                break
-        return current_value
+        return self._value_at(requested_date, self.new_amounts)
 
     def correction(self):
         """ Return the correction for the whole deprecation period  """

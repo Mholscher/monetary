@@ -2,11 +2,8 @@ alabaster==0.7.12
 attrs==22.1.0
 Babel==2.10.3
 blessings==1.7
-bpython==0.22.1
 certifi==2022.12.7
 charset-normalizer==2.1.0
-curtsies==0.3.10
-cwcwidth==0.1.6
 docutils==0.19
 exceptiongroup==1.1.0
 flake8==5.0.4
@@ -19,7 +16,7 @@ iso4217==1.11.20220401
 Jinja2==3.1.2
 MarkupSafe==2.1.1
 mccabe==0.7.0
--e git+https://github.com/Mholscher/monetary.git@3e78e0d3789f54b39ed913acded4ac663fea5ea1#egg=monetary
+-e git+https://github.com/Mholscher/monetary.git@a127e58579d7619828c8a546716685454cd4f903#egg=monetary
 packaging==21.3
 pluggy==1.0.0
 pycodestyle==2.9.1
@@ -30,7 +27,7 @@ pytest==7.2.1
 python-dateutil==2.8.2
 pytz==2022.1
 pyxdg==0.28
-requests==2.28.1
+requests==2.31.0
 six==1.16.0
 snowballstemmer==2.2.0
 Sphinx==6.1.3

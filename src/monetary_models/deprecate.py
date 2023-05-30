@@ -93,6 +93,24 @@ class DeprecationSchedule():
                                 deprecation_amount))
             current_value -= deprecation_amount
 
+    def _value_at(self, requested_date, amounts):
+        """ Return the value of the asset at the requested date
+
+        From the purchase amount subtract all deprecation between the
+        purchase date and the date passed in. Dates before the purchase date
+        are invalid.
+        """
+
+       current_value = self.purchase_amount
+        if requested_date < self.purchase_date:
+            return 0
+        for deprecation_period, amount in enumerate(amounts):
+            if amount[0] <= requested_date:
+                current_value -= amount[1]
+            else:
+                break
+        return current_value
+
     def value_at(self, requested_date):
         """ Return the value of the asset at the requested date
 
@@ -101,12 +119,4 @@ class DeprecationSchedule():
         are invalid.
         """
 
-        current_value = self.purchase_amount
-        if requested_date < self.purchase_date:
-            return 0
-        for deprecation_period, amount in enumerate(self.amounts):
-            if amount[0] <= requested_date:
-                current_value -= amount[1]
-            else:
-                break
-        return current_value
+        return _value_at(requested_date, self.amounts)
