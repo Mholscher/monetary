@@ -308,7 +308,7 @@ class RunningInterest(object):
     """ This class models interest with different principals or percentages
 
     It will calculate the interest with the same parameters as the Interest
-    class, however there may be more than obne period, where interest 
+    class, however there may be more than one period, where interest 
     fractions or principals may differ.
 
         :periodic_amounts: an iterable of start date/end date pairs with associated principals and interest fractions.

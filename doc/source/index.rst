@@ -15,6 +15,7 @@ Welcome to the Monetary library documentation!
    Interpolate
    Deprecation
    MonetaryAPI
+   FinancialAssets
 
 Indices and tables
 ==================

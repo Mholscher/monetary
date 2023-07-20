@@ -101,7 +101,7 @@ class DeprecationSchedule():
         are invalid.
         """
 
-       current_value = self.purchase_amount
+        current_value = self.purchase_amount
         if requested_date < self.purchase_date:
             return 0
         for deprecation_period, amount in enumerate(amounts):
@@ -119,4 +119,4 @@ class DeprecationSchedule():
         are invalid.
         """
 
-        return _value_at(requested_date, self.amounts)
+        return self._value_at(requested_date, self.amounts)
