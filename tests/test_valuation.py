@@ -34,7 +34,7 @@ class TestThisMonthValue(unittest.TestCase):
                 "principal" : 105_000,
                 "interest_posted" : 17.30}]
         loan = LoanValue(period_list)
-        self.assertEqual(loan.interest(), 17.84,
+        self.assertEqual(loan.posted_interest(), 17.84,
                          "Incorrect interest")
 
     def test_principal_change(self):
@@ -66,7 +66,7 @@ class TestThisMonthValue(unittest.TestCase):
 
         period_list = []
         loan = LoanValue(period_list)
-        self.assertEqual(loan.interest(), 0,
+        self.assertEqual(loan.posted_interest(), 0,
                          "Interest not 0 for no data")
         self.assertEqual(loan.repayment(), 0,
                          "Repayment not 0 for no data")
@@ -82,7 +82,56 @@ class TestThisMonthValue(unittest.TestCase):
         self.assertEqual(loan.repayment(), 0,
                          "Incorrect repayment for 1 entry")
         loan = LoanValue(period_list)
-        self.assertEqual(loan.interest(), period_list[0]["interest_posted"],
+        self.assertEqual(loan.posted_interest(), period_list[0]["interest_posted"],
                          "Incorrect interest for 1 entry")
 
 
+    def test_predict_period(self):
+        """ Predict interest for a period, from estimated rate """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1), 
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        loan = LoanValue(period_list)
+        self.assertEqual(loan.posted_interest(),
+                         period_list[0]["interest_posted"],
+                         "Incorrect interest for 1 entry")
+        self.assertEqual(loan.future_interest(),
+                         4886,
+                         "Incorrect estimated interest")
+
+    def test_principal_with_future(self):
+        """ Principal change should be working with future interest """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1), 
+                "to_date" : date(2023, 10, 1),
+                "principal" : 115_000,
+                "interest_posted" : 12.22},
+                {"from_date" : date(2023, 10, 1), 
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        loan = LoanValue(period_list)
+        self.assertEqual(loan.repayment(), 7_000,
+                             "Incorrect repayment for future interest")
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1), 
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        loan = LoanValue(period_list)
+        self.assertEqual(loan.repayment(), 0,
+                             "Incorrect repayment for future interest")
+ 

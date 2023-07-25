@@ -26,6 +26,7 @@ financial instruments.
 
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from monetary_models.interests import Interest
 
 class LoanValue():
     """ The class holds the value information for a period.
@@ -39,18 +40,38 @@ class LoanValue():
 
         self.period_list = period_data
 
-    def interest(self):
+    def posted_interest(self):
         """ Calculate the total interest from the list of periods """
 
+        posted_periods = [period for period in self.period_list
+                              if "interest_posted" in period]
         total_interest = 0
-        for period in self.period_list:
+        for period in posted_periods:
             total_interest += period["interest_posted"]
         return total_interest
 
     def repayment(self):
         """ Calculate repayment of principal for the period """
 
-        if self.period_list:
-            return (self.period_list[0]["principal"] 
-                    - self.period_list[-1]["principal"])
+        posted_periods = [period for period in self.period_list
+                              if "principal" in period]
+        if posted_periods:
+            return (posted_periods[0]["principal"] 
+                    - posted_periods[-1]["principal"])
         return 0
+
+    def future_interest(self):
+        """ Calculate future interest """
+
+        calculation_periods = [period for period in self.period_list
+                              if "interest_frac" in period]
+        interest_estimate = 0
+        for period in calculation_periods:
+            interest = Interest(from_date=period["from_date"],
+                                to_date=period["to_date"],
+                                start_balance=period["start_balance"],
+                                interest_frac=period["interest_frac"],
+                                calculation_method=Interest.ACTUAL_PERIODS
+                                )
+            interest_estimate += interest.amount_cents()
+        return interest_estimate
