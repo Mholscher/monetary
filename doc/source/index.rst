@@ -14,8 +14,8 @@ Welcome to the Monetary library documentation!
    Annuity
    Interpolate
    Deprecation
-   MonetaryAPI
    FinancialAssets
+   MonetaryAPI
 
 Indices and tables
 ==================

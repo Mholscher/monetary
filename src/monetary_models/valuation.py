@@ -19,21 +19,36 @@
 The IFRS rule 9 gives 2 options for the calculation, the rule to always
 use the original and/or latest recognition, or to determine the fair value
 based on the expected return. The latter one is for financial institutions,
-so here we will always valuate on the latest recognition. See the 
+so here we will always valuate on the latest recognition. See the
 individual instrument calculation to see how this pans out for the different
 financial instruments.
 """
 
-from datetime import date
-from dateutil.relativedelta import relativedelta
 from monetary_models.interests import Interest
 
+
 class LoanValue():
-    """ The class holds the value information for a period.
+    """ The class holds the liability value for one or more periods.
 
     From the input that is very similar to the interest calculation
     input the totals are calculated. It can also be used to project
-    a value for a (partially) future period.
+    a value for a future period.
+
+    The input is a period list, with each period a history period or
+    a future period. History periods are formatted:
+
+        :from_date: The start date of this period
+        :to_date: The day after the end of the period
+        :principal: The amount of the principal in the smallest denomination (like cents or pennies)
+        :interest_posted: The interest posted in the period
+
+    Future periods are formatted:
+
+        :from_date: The start date of this period
+        :to_date: The day after the end of the period
+        :start_balance: The amount of the principal at start of the period in the smallest denomination (like cents or pennies)
+        :interest_frac: The interest percentage as a fraction in the period
+
     """
 
     def __init__(self, period_data):
@@ -44,7 +59,7 @@ class LoanValue():
         """ Calculate the total interest from the list of periods """
 
         posted_periods = [period for period in self.period_list
-                              if "interest_posted" in period]
+                          if "interest_posted" in period]
         total_interest = 0
         for period in posted_periods:
             total_interest += period["interest_posted"]
@@ -54,9 +69,9 @@ class LoanValue():
         """ Calculate repayment of principal for the period """
 
         posted_periods = [period for period in self.period_list
-                              if "principal" in period]
+                          if "principal" in period]
         if posted_periods:
-            return (posted_periods[0]["principal"] 
+            return (posted_periods[0]["principal"]
                     - posted_periods[-1]["principal"])
         return 0
 
@@ -64,7 +79,7 @@ class LoanValue():
         """ Calculate future interest """
 
         calculation_periods = [period for period in self.period_list
-                              if "interest_frac" in period]
+                               if "interest_frac" in period]
         interest_estimate = 0
         for period in calculation_periods:
             interest = Interest(from_date=period["from_date"],

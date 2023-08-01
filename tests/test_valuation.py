@@ -86,6 +86,8 @@ class TestThisMonthValue(unittest.TestCase):
                          "Incorrect interest for 1 entry")
 
 
+class TestPredictions(unittest.TestCase):
+
     def test_predict_period(self):
         """ Predict interest for a period, from estimated rate """
 

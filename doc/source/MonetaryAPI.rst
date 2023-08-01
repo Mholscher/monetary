@@ -44,3 +44,9 @@ Deprecating capital goods with a flexible schedule
 
 .. automodule:: monetary_models.deprecate_example
    :members:
+
+Valuation of financial assets and liabilities
+---------------------------------------------
+
+.. automodule:: monetary_models.valuation
+   :members:
