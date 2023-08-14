@@ -95,7 +95,7 @@ class TestPredictions(unittest.TestCase):
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
-                {"from_date" : date(2023, 7, 1), 
+                {"from_date" : date(2023, 7, 1),
                 "to_date" : date(2024, 2, 1),
                 "start_balance" : 123_500,
                 "interest_frac" : 0.07}]
@@ -114,7 +114,7 @@ class TestPredictions(unittest.TestCase):
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
-                {"from_date" : date(2023, 7, 1), 
+                {"from_date" : date(2023, 7, 1),
                 "to_date" : date(2023, 10, 1),
                 "principal" : 115_000,
                 "interest_posted" : 12.22},
@@ -129,7 +129,7 @@ class TestPredictions(unittest.TestCase):
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
-                {"from_date" : date(2023, 7, 1), 
+                {"from_date" : date(2023, 7, 1),
                 "to_date" : date(2024, 2, 1),
                 "start_balance" : 123_500,
                 "interest_frac" : 0.07}]
@@ -137,3 +137,98 @@ class TestPredictions(unittest.TestCase):
         self.assertEqual(loan.repayment(), 0,
                              "Incorrect repayment for future interest")
  
+
+class TestWithDiscounting(unittest.TestCase):
+
+    def test_with_one_rate(self):
+        """ A payment will be discounted if discount_rate is there """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1),
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        discount_factors = {date(2023, 7, 1) : 0.02}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.future_interest(),
+                         round(4886 * (1 - 0.02)),
+                         "Incorrect estimated discounted interest")
+
+    def test_with_future_rate(self):
+        """ No discounte if discount_rate is beyond payment date """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1),
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        discount_factors = {date(2023, 8, 1) : 0.02}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.future_interest(),
+                         4886,
+                         "Estimated interest wrongfully discounted")
+
+    def test_with_more_rates(self):
+        """ Use proper discount_rate if there are more """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1),
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        discount_factors = {date(2023, 7, 1) : 0.02,
+                            date(2023,2, 1) : 0.1,
+                            date(2024,8, 3) : 0.015}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.future_interest(),
+                         round(4886 * (1 - 0.02)),
+                         "Used incorrect discounted factor")
+
+    def test_with_interpolated_rates(self):
+        """ Interpolate discount_rate if between two dates """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2023, 7, 1),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2023, 7, 1),
+                "to_date" : date(2024, 2, 1),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        discount_factors = {date(2023, 5, 1) : 0.02,
+                            date(2023,2, 1) : 0.015,
+                            date(2023, 8, 3) : 0.025,
+                            date(2024, 1, 24) : 0.12}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.future_interest(),
+                         4772,
+                         "Incorrect discount interpolation")
+
+    def test_date_beyond_last_rate(self):
+        """ Interpolate discount_rate if between two dates """
+
+        period_list = [{"from_date" : date(2023, 2, 1), 
+                "to_date" : date(2024, 1, 28),
+                "principal" : 122_000,
+                "interest_posted" : 13.54},
+                {"from_date" : date(2024, 1, 28),
+                "to_date" : date(2024, 2, 12),
+                "start_balance" : 123_500,
+                "interest_frac" : 0.07}]
+        discount_factors = {date(2023, 5, 1) : 0.02,
+                            date(2023,2, 1) : 0.015,
+                            date(2023, 8, 3) : 0.025,
+                            date(2024, 1, 24) : 0.12}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.future_interest(),
+                         round(355 * (1-0.12)),
+                         "Incorrect discount beyond last date")

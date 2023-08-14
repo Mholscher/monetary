@@ -49,11 +49,23 @@ class LoanValue():
         :start_balance: The amount of the principal at start of the period in the smallest denomination (like cents or pennies)
         :interest_frac: The interest percentage as a fraction in the period
 
+    For discounting you can enter discount factors. The factors are defined as:
+
+        :date_factor: The date for which the factor is valid
+        :factor: A fraction with which an amount is to be discounted on that date
+
+    You can pass in None, than there will be no discounting of future amounts.
+    If there is one factor, it will be taken as a constant, and each amount
+    to be received after the date_factor will be discounted by the factor.
+    You can pass in more factors, the factors will be interpolated between the
+    dates and beyond the last date the factor will be constant (i.e. the value
+    for the highest date). Before the lowest date, no discounting will be done.
     """
 
-    def __init__(self, period_data):
+    def __init__(self, period_data, discount_factors=None):
 
         self.period_list = period_data
+        self.discount_factors = discount_factors
 
     def posted_interest(self):
         """ Calculate the total interest from the list of periods """
@@ -66,7 +78,11 @@ class LoanValue():
         return total_interest
 
     def repayment(self):
-        """ Calculate repayment of principal for the period """
+        """ Calculate repayment of principal for the periods 
+
+        The repayment is taken as the difference between the principals
+        in consecutive periods.
+        """
 
         posted_periods = [period for period in self.period_list
                           if "principal" in period]
@@ -75,18 +91,63 @@ class LoanValue():
                     - posted_periods[-1]["principal"])
         return 0
 
+    def _discount_interest(self, interest_amount, at_date, period):
+        """ Discount an interest amount """
+
+        date_factors = [date_factor for date_factor in
+                        self.discount_factors.keys()
+                        if date_factor <= 
+                        period["from_date"]]
+        if date_factors:
+            applicable_key = max(date_factors)
+            if applicable_key == at_date:
+                interest_amount = round(interest_amount * 
+                                    (1 -self.discount_factors[applicable_key]))
+            else:
+                larger_dates = [date_factor for date_factor in
+                        self.discount_factors.keys()
+                        if date_factor >
+                        period["from_date"]]
+                if not larger_dates:
+                    interest_amount = round(interest_amount *
+                                    (1 - self.discount_factors[applicable_key]))
+                else:
+                    next_key = min(larger_dates)
+                    factor = (self.discount_factors[applicable_key] +
+                                (at_date - applicable_key) *
+                                (self.discount_factors[next_key]
+                                - self.discount_factors[applicable_key]) /
+                                (next_key - applicable_key))
+                    interest_amount = (interest_amount
+                                   - round(interest_amount * factor))
+        return interest_amount
+
+
     def future_interest(self):
-        """ Calculate future interest """
+        """ Calculate future interest
+
+        For each future period in the period list calculate
+        the expected interest. If no discounting is requested,
+        return the amount expected, else apply the discount.
+        """
 
         calculation_periods = [period for period in self.period_list
                                if "interest_frac" in period]
         interest_estimate = 0
         for period in calculation_periods:
+            # print(period)
             interest = Interest(from_date=period["from_date"],
                                 to_date=period["to_date"],
                                 start_balance=period["start_balance"],
                                 interest_frac=period["interest_frac"],
                                 calculation_method=Interest.ACTUAL_PERIODS
                                 )
-            interest_estimate += interest.amount_cents()
+            interest_this_period = interest.amount_cents()
+            # apply discounting
+            if self.discount_factors:
+                interest_this_period = self._discount_interest(
+                                           interest_this_period,
+                                           period["from_date"],
+                                           period)
+            interest_estimate += interest_this_period
         return interest_estimate
