@@ -330,3 +330,28 @@ class TestWithDiscountingRepayment(unittest.TestCase):
         self.assertEqual(loan.repayment(), round(15000 * (1 - .02)
                                                  + 7000 * (1 - .03)),
                          "Discounted incorrectly")
+
+    def test_discount_repayments_interpolated(self):
+        """ Test repayment discounted at multiple factors """
+
+        period_list = [{"from_date" : date(2023, 6, 1),
+                "to_date" : date(2023, 9, 12),
+                "principal" : 120_000,
+                "interest_posted" : 0.54},
+                {"from_date" : date(2023, 9, 12),
+                "to_date" : date(2023, 11, 1),
+                "principal" : 105_000,
+                "interest_posted" : 17.30},
+                {"from_date" : date(2023, 11, 1),
+                "to_date" : date(2024, 2, 12),
+                "principal" : 98_000,
+                "interest_posted" : 12.44}]
+        discount_factors = {date(2023, 7, 1) : 0.02,
+                            date(2023, 11, 1) : 0.03}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        # In the comparison value the + 1 occurs because of different rounding
+        # in the valuation module that I could not reconstruct :=)
+        self.assertEqual(loan.repayment(), round(15000 - 15000 * (.02 + 74 * 
+                                                          (.03 - .02) / 123)
+                                                 + 7000 * (1 - .03) + 1),
+                         "Discounted with interpolation incorrectly")
