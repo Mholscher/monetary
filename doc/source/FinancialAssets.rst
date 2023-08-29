@@ -26,7 +26,7 @@ A deposit
 
 The deposit is kind of the mirror image of the loan. It supplies an income stream for the capital and interest.
 
-The repayment will be governed by a schedule and the calculation if the value of future repayments will be by discounting by the interest rate for funds due at the repayment time. Interest will be the same. Here also, repayment schedule and interest schedule may differ.
+The repayment will be governed by a schedule and the calculation of the value of future repayments will be by discounting by the discount rate for funds due at the repayment time. Interest will be the same. Here also, repayment schedule and interest schedule may differ. Discounting is optional.
 
 Other than for loans, there is a debtor risk being run. You are not sure the debtor will pay in time or will pay *at all*. This risk will be ignored for now. It does have an influence on the valuation of the deposit.
 

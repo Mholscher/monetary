@@ -11,7 +11,6 @@
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU Lesser General Public License for more details.
-
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with monetary.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -25,11 +24,11 @@ class TestThisMonthValue(unittest.TestCase):
     def test_compile_interest(self):
         """ Compile the value from posted interest """
 
-        period_list = [{"from_date" : date(2023, 6, 1), 
+        period_list = [{"from_date" : date(2023, 6, 1),
                 "to_date" : date(2023, 11, 30),
                 "principal" : 120_000,
                 "interest_posted" : 0.54},
-                {"from_date" : date(2023, 12, 1), 
+                {"from_date" : date(2023, 12, 1),
                 "to_date" : date(2024, 5, 31),
                 "principal" : 105_000,
                 "interest_posted" : 17.30}]
@@ -40,11 +39,11 @@ class TestThisMonthValue(unittest.TestCase):
     def test_principal_change(self):
         """ Compile the value from posted interest """
 
-        period_list = [{"from_date" : date(2023, 6, 1), 
+        period_list = [{"from_date" : date(2023, 6, 1),
                 "to_date" : date(2023, 11, 30),
                 "principal" : 120_000,
                 "interest_posted" : 0.54},
-                {"from_date" : date(2023, 12, 1), 
+                {"from_date" : date(2023, 12, 1),
                 "to_date" : date(2024, 5, 31),
                 "principal" : 105_000,
                 "interest_posted" : 17.30}]
@@ -52,7 +51,7 @@ class TestThisMonthValue(unittest.TestCase):
         self.assertEqual(loan.repayment(), period_list[0]["principal"]
                          - period_list[1]["principal"],
                          "Incorrect repayment")
-        period_list.append({"from_date" : date(2023, 6, 1), 
+        period_list.append({"from_date" : date(2023, 6, 1),
                 "to_date" : date(2024, 7, 31),
                 "principal" : 102_000,
                 "interest_posted" : 8.30})
@@ -74,7 +73,7 @@ class TestThisMonthValue(unittest.TestCase):
     def test_one_period_only(self):
         """ One period should return interest and zero for repayment """
 
-        period_list = [{"from_date" : date(2023, 6, 1), 
+        period_list = [{"from_date" : date(2023, 6, 1),
                 "to_date" : date(2023, 11, 30),
                 "principal" : 120_000,
                 "interest_posted" : 0.54}]
@@ -136,14 +135,39 @@ class TestPredictions(unittest.TestCase):
         loan = LoanValue(period_list)
         self.assertEqual(loan.repayment(), 0,
                              "Incorrect repayment for future interest")
- 
 
-class TestWithDiscounting(unittest.TestCase):
+class TestMultipleRepayments(unittest.TestCase):
+
+    def setUp(self):
+        """ setup repayments etc. """
+
+        self.period_list = [{"from_date" : date(2023, 6, 1),
+                "to_date" : date(2024, 1, 5),
+                "principal" : 120_000,
+                "interest_posted" : 0.54},
+                {"from_date" : date(2024, 1, 5),
+                "to_date" : date(2024, 5, 31),
+                "principal" : 105_000,
+                "interest_posted" : 17.30},
+                {"from_date" : date(2024, 5, 31),
+                "to_date" : date(2025, 5, 31),
+                "principal" : 96_000,
+                "interest_posted" : 12.27}]
+
+
+    def test_multiple_repayments(self):
+        """  Value should be the sum of repayments """
+
+        loan = LoanValue(self.period_list)
+        self.assertEqual(loan.repayment(), 24_000,
+                             "Incorrect repayment for multiple periods")
+
+class TestWithDiscountingInterest(unittest.TestCase):
 
     def test_with_one_rate(self):
         """ A payment will be discounted if discount_rate is there """
 
-        period_list = [{"from_date" : date(2023, 2, 1), 
+        period_list = [{"from_date" : date(2023, 2, 1),
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
@@ -160,7 +184,7 @@ class TestWithDiscounting(unittest.TestCase):
     def test_with_future_rate(self):
         """ No discounte if discount_rate is beyond payment date """
 
-        period_list = [{"from_date" : date(2023, 2, 1), 
+        period_list = [{"from_date" : date(2023, 2, 1),
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
@@ -177,7 +201,7 @@ class TestWithDiscounting(unittest.TestCase):
     def test_with_more_rates(self):
         """ Use proper discount_rate if there are more """
 
-        period_list = [{"from_date" : date(2023, 2, 1), 
+        period_list = [{"from_date" : date(2023, 2, 1),
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
@@ -196,7 +220,7 @@ class TestWithDiscounting(unittest.TestCase):
     def test_with_interpolated_rates(self):
         """ Interpolate discount_rate if between two dates """
 
-        period_list = [{"from_date" : date(2023, 2, 1), 
+        period_list = [{"from_date" : date(2023, 2, 1),
                 "to_date" : date(2023, 7, 1),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
@@ -214,9 +238,9 @@ class TestWithDiscounting(unittest.TestCase):
                          "Incorrect discount interpolation")
 
     def test_date_beyond_last_rate(self):
-        """ Interpolate discount_rate if between two dates """
+        """ Use latest discount_rate if payment after last """
 
-        period_list = [{"from_date" : date(2023, 2, 1), 
+        period_list = [{"from_date" : date(2023, 2, 1),
                 "to_date" : date(2024, 1, 28),
                 "principal" : 122_000,
                 "interest_posted" : 13.54},
@@ -232,3 +256,77 @@ class TestWithDiscounting(unittest.TestCase):
         self.assertEqual(loan.future_interest(),
                          round(355 * (1-0.12)),
                          "Incorrect discount beyond last date")
+
+
+class TestWithDiscountingRepayment(unittest.TestCase):
+
+    def test_loan_repayment_discounted(self):
+        """ Test repayment discounted at factor date """
+
+        period_list = [{"from_date" : date(2023, 6, 1),
+                "to_date" : date(2023, 11, 30),
+                "principal" : 120_000,
+                "interest_posted" : 0.54},
+                {"from_date" : date(2023, 12, 1),
+                "to_date" : date(2024, 5, 31),
+                "principal" : 105_000,
+                "interest_posted" : 17.30}]
+        discount_factors = {date(2023, 12, 1) : 0.02,
+                            date(2024, 1, 24) : 0.12}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.repayment(), 15000 * (1 - 0.02),
+                         "Incorrect discounted repayment")
+
+    def test_one_discount_factor(self):
+        """ Test repayment discounted at a single factor """
+
+        period_list = [{"from_date" : date(2023, 6, 1),
+                "to_date" : date(2024, 1, 5),
+                "principal" : 120_000,
+                "interest_posted" : 0.54},
+                {"from_date" : date(2024, 1, 5),
+                "to_date" : date(2024, 5, 31),
+                "principal" : 105_000,
+                "interest_posted" : 17.30}]
+        discount_factors = {date(2023, 12, 1) : 0.02}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.repayment(), 15000 * (1 - 0.02),
+                         "Incorrect discount for single factor")
+
+    def test_no_discount_in_past(self):
+        """ Test repayment discounted at a single factor """
+
+        period_list = [{"from_date" : date(2023, 6, 1),
+                "to_date" : date(2023, 7, 1),
+                "principal" : 120_000,
+                "interest_posted" : 0.54},
+                {"from_date" : date(2023, 7, 1),
+                "to_date" : date(2024, 5, 31),
+                "principal" : 105_000,
+                "interest_posted" : 17.30}]
+        discount_factors = {date(2023, 12, 1) : 0.02}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.repayment(), 15000,
+                         "Discounted early payment")
+
+    def test_discount_for_more_repayments(self):
+        """ Test repayment discounted at multiple factors """
+
+        period_list = [{"from_date" : date(2023, 6, 1),
+                "to_date" : date(2023, 7, 1),
+                "principal" : 120_000,
+                "interest_posted" : 0.54},
+                {"from_date" : date(2023, 7, 1),
+                "to_date" : date(2023, 11, 1),
+                "principal" : 105_000,
+                "interest_posted" : 17.30},
+                {"from_date" : date(2023, 11, 1),
+                "to_date" : date(2024, 2, 12),
+                "principal" : 98_000,
+                "interest_posted" : 12.44}]
+        discount_factors = {date(2023, 7, 1) : 0.02,
+                            date(2023, 11, 1) : 0.03}
+        loan = LoanValue(period_list, discount_factors=discount_factors)
+        self.assertEqual(loan.repayment(), round(15000 * (1 - .02)
+                                                 + 7000 * (1 - .03)),
+                         "Discounted incorrectly")
