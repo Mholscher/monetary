@@ -19,7 +19,7 @@ The repayments on the capital are scheduled for a normal loan. It may be schedul
 
 Interest is accounted for in a given period in the future also. Amounts are discounted if a discount rate is supplied. We will not assume that the interest schedule is the same as the repayment schedule, though in practice they usually will be.
 
-Interest for the remainder (future) part of a period will be calculated at a fixed  interest rates determined outside of the calculation. As this is governed by the calling routine, no discount is applied. 
+For repayments as well as interest payments discount rates may be interpolated. If more than one discount rate is supplied, the discount rates are interpolated between the dates. The interpolation is linear, based on the number of days between the discount dates and the date the payment takes place.
 
 A deposit
 ---------
