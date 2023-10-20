@@ -213,3 +213,85 @@ class LoanValue:
                 )
             interest_estimate += interest_this_period
         return interest_estimate
+
+
+class DepositValue(LoanValue):
+    """ The class holds the asset value for one or more periods.
+
+    From the input that is very similar to the interest calculation
+    input the totals are calculated. It can also be used to project
+    a value for a future period.
+
+    The input is a period list, with each period a history period or
+    a future period. History periods are formatted:
+
+        :from_date: The start date of this period
+        :to_date: The day after the end of the period
+        :principal: The amount of the principal in the smallest denomination (like cents or pennies)
+        :interest_posted: The interest posted in the period
+
+    Future periods are formatted:
+
+        :from_date: The start date of this period
+        :to_date: The day after the end of the period
+        :start_balance: The amount of the principal at start of the period in the smallest denomination (like cents or pennies)
+        :interest_frac: The interest percentage as a fraction in the period
+
+    For discounting you can enter discount factors. The factors are defined as:
+
+        :date_factor: The date for which the factor is valid
+        :factor: A fraction with which an amount is to be discounted on that date
+
+    You can pass in None, than there will be no discounting of future amounts.
+    If there is one factor, it will be taken as a constant, and each amount
+    to be received after the date_factor will be discounted by the factor.
+    You can pass in more factors, the factors will be interpolated between the
+    dates and beyond the last date the factor will be constant (i.e. the value
+    for the highest date). Before the lowest date, no discounting will be done. """
+
+    pass
+
+class CommonStockValue():
+    """ This class holds the value of one share. 
+
+    From the input the value of a share of common stock is calculated. The 
+    value of the stock at market and the expected dividends. The value of the 
+    stock is discounted at the date of the "expected sale" of the asset. See
+    the documentation for more information.
+
+    The input is the historic value of the share and the dividends paid in the
+    past. Further we need the expected sales date. It is a list/tuple of:
+
+        :value_date: The date the value/dividend applies_to
+        :share_value: The value of shares in the smallest denomination (like cents or pennies)
+        :dividend_paid: The dividend paid at or for the period denoted by the value date
+
+    For discounting the discount factors are passed in. See the LoanValue documentation 
+    for the format these are in.
+    """
+
+    date_measured = "date_measured"
+    share_price = "share_price"
+    dividend = "dividend"
+
+    def __init__(self, history_list):
+ 
+        self.history_list = history_list
+
+    def growth_share_value(self):
+        """ From the history list we calculate the mean value increase per share """
+
+        sum_values = 0
+        for item_no, history_item in enumerate(self.history_list):
+            if item_no == 0:
+                continue
+            sum_values += (history_item[self.share_price]
+                           - self.history_list[item_no -1][self.share_price])
+        return sum_values // (len(self.history_list) - 1)
+
+    def mean_dividend(self):
+        """ From the history list we calculate the mean dividend """
+
+        return round(sum([history_item[self.dividend] 
+                    for history_item in self.history_list])
+                / len(self.history_list))

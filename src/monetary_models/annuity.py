@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with monetary.  If not, see <http://www.gnu.org/licenses/>.
 
-""" This file contains functions and classes for annuity calculation.
+""" This module contains functions and classes for annuity calculation.
 
 Calculations are determining the monthly annuity payable, the interest and
 repayment amounts per period as well as the "final payment", which makes
