@@ -1,6 +1,7 @@
 alabaster==0.7.12
 attrs==22.1.0
 Babel==2.10.3
+black==23.7.0
 blessed==1.20.0
 blessings==1.7
 bpython==0.24
@@ -20,8 +21,11 @@ iso4217==1.11.20220401
 Jinja2==3.1.2
 MarkupSafe==2.1.1
 mccabe==0.7.0
--e git+https://github.com/Mholscher/monetary.git@1a6baf393b60de325674f7747053cd12d2c1f103#egg=monetary
-packaging==21.3
+-e git+https://github.com/Mholscher/monetary.git@23fb495eebff987a15b9befeb4f1d93e6394042a#egg=monetary
+mypy-extensions==1.0.0
+packaging==23.1
+pathspec==0.11.2
+platformdirs==3.10.0
 pluggy==1.0.0
 pycodestyle==2.9.1
 pyflakes==2.5.0
@@ -43,7 +47,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 tomli==2.0.1
 typing_extensions==4.3.0
-urllib3==1.26.17
+urllib3==2.0.7
 wcwidth==0.2.6
 WTForms==3.0.1
 zipp==3.8.1

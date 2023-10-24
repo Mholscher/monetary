@@ -429,9 +429,19 @@ class TestStockValue(unittest.TestCase):
         self.date_measured = "date_measured"
         self.share_price = "share_price"
         self.dividend = "dividend"
+        self.historical = [{self.date_measured : date(2020, 1, 1),
+                           self.share_price : 2100,
+                           self.dividend : 15 },
+                           {self.date_measured : date(2021, 1, 1),
+                           self.share_price : 2050,
+                           self.dividend : 20 },
+                           {self.date_measured : date(2022, 1, 1),
+                           self.share_price : 2090,
+                           self.dividend : 10 }]
 
     def test_mean_value_calc(self):
         """ Calculate the mean value from the history """
+
         historical = [{self.date_measured : date(2020, 2, 1),
                       self.share_price : 2000,
                       self.dividend : 12 },
@@ -460,3 +470,33 @@ class TestStockValue(unittest.TestCase):
         stock_value = CommonStockValue(historical)
         self.assertEqual(stock_value.mean_dividend(), round(45 / 3),
                          "Mean dividend wrong")
+
+    def test_value_today(self):
+        """ Calculate value of a share without discounting """
+
+        stock_value = CommonStockValue(self.historical)
+        self.assertEqual(stock_value.value(date(2022, 1, 1)), 2090,
+                         "Incorrect current value")
+
+    def test_interpolated_value(self):
+        """ Test calculating a value in between historical dates """
+
+        stock_value = CommonStockValue(self.historical)
+        self.assertEqual(stock_value.value(date(2021, 8, 1)), 2073,
+                         "Incorrect value at interpolated date")
+
+    def test_date_before_info(self):
+        """ Passing a date before oldest info gives error """
+
+        stock_value = CommonStockValue(self.historical)
+        with self.assertRaises(ValueError):
+            self.assertEqual(stock_value.value(date(2018, 8, 1)), 2073,
+                             "Incorrect value at interpolated date")
+
+    def test_date_beyond_info(self):
+        """ Passing a date after last date of info gives error """
+
+        stock_value = CommonStockValue(self.historical)
+        with self.assertRaises(ValueError):
+            self.assertEqual(stock_value.value(date(2024, 8, 1)), 2066,
+                             "Incorrect value at interpolated date")

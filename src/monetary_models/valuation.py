@@ -25,6 +25,13 @@ financial instruments.
 """
 
 from monetary_models.interests import Interest
+from monetary_models.interpolate import interpolate
+
+
+class CannotCalculateValueAt(ValueError):
+    """ A value cannot be calculated with the current input """
+
+    pass
 
 
 class LoanValue:
@@ -295,3 +302,31 @@ class CommonStockValue():
         return round(sum([history_item[self.dividend] 
                     for history_item in self.history_list])
                 / len(self.history_list))
+
+    def value(self, at_date=None):
+        """ Calculate the estimated value at at_date """
+
+        if at_date == None:
+            self.at_date = date.now()
+        else:
+            self.at_date = at_date
+        result_price = None
+        for item in self.history_list:
+            if item[self.date_measured] == at_date:
+                result_price = item[self.share_price]
+                return result_price
+        # print("list is", self.history_list, "at date", at_date)
+        for item_no, history_item in enumerate(self.history_list):
+            if item_no == 0:
+                continue
+            if at_date < history_item[self.date_measured]:
+                at_start = (self.history_list[item_no - 1][self.date_measured],
+                            self.history_list[item_no - 1][self.share_price])
+                at_end = (item[self.date_measured],
+                            item[self.share_price])
+                dates = [at_date]
+                result_price = interpolate(at_start, at_end, dates)[0][1]
+                # print("Price is", result_price)
+        if result_price is None:
+            raise CannotCalculateValueAt(f"No price could be determined for {at_date}")
+        return result_price
