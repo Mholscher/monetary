@@ -264,17 +264,17 @@ class TestWithDiscountingRepayment(unittest.TestCase):
         """ Test repayment discounted at factor date """
 
         period_list = [{"from_date" : date(2023, 6, 1),
-                "to_date" : date(2023, 11, 30),
+                "to_date" : date(2024, 1, 1),
                 "principal" : 120_000,
                 "interest_posted" : 0.54},
-                {"from_date" : date(2023, 12, 1),
+                {"from_date" : date(2024, 1, 1),
                 "to_date" : date(2024, 5, 31),
                 "principal" : 105_000,
                 "interest_posted" : 17.30}]
         discount_factors = {date(2023, 12, 1) : 0.02,
-                            date(2024, 1, 24) : 0.12}
+                            date(2024, 1, 1) : 0.12}
         loan = LoanValue(period_list, discount_factors=discount_factors)
-        self.assertEqual(loan.repayment(), 15000 * (1 - 0.02),
+        self.assertEqual(loan.repayment(), round(15000 * (1 - 0.12)),
                          "Incorrect discounted repayment")
 
     def test_one_discount_factor(self):

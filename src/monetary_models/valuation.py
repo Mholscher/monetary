@@ -26,12 +26,46 @@ financial instruments.
 
 from monetary_models.interests import Interest
 from monetary_models.interpolate import interpolate
+from itertools import pairwise
 
 
 class CannotCalculateValueAt(ValueError):
     """ A value cannot be calculated with the current input """
 
     pass
+
+
+def discount_amount(undiscounted_amount, at_date, discount_factors):
+    """ Discount an amount at a given date with discount factor(s) """
+
+    # Find the applicable discount factor(s)
+    applicable_factors = None
+    for factor in pairwise(discount_factors):
+        if (factor[0] <= at_date
+            and  factor[1] >= at_date):
+            applicable_factors = factor
+            break
+    # Zero or one discount factor:
+    if applicable_factors is None:
+        if discount_factors:
+            for start_date, factor in discount_factors.items():
+                applicable_factor = (start_date, factor)
+            return undiscounted_amount - round(undiscounted_amount * factor)
+        return undiscounted_amount
+
+    # Otherwise more discount factors => interpolate
+    factor = discount_factors[applicable_factors[0]] + (
+        at_date - applicable_factors[0]
+    ) * (
+        discount_factors[applicable_factors[1]]
+        - discount_factors[applicable_factors[0]]
+    ) / (
+        applicable_factors[1] - applicable_factors[0]
+    )
+
+    return(undiscounted_amount - round(
+        undiscounted_amount * factor
+    ))
 
 
 class LoanValue:
@@ -123,35 +157,17 @@ class LoanValue:
             for date_factor in self.discount_factors.keys()
             if date_factor <= period["from_date"]
         ]
+
         if date_factors:
             applicable_key = max(date_factors)
-            if applicable_key == at_date:
-                repayment_amount = round(
-                    repayment_amount * (1 - self.discount_factors[applicable_key])
-                )
-            else:
-                larger_dates = [
-                    date_factor
-                    for date_factor in self.discount_factors.keys()
-                    if date_factor > period["from_date"]
-                ]
-                if not larger_dates:
-                    repayment_amount = round(
-                        repayment_amount * (1 - self.discount_factors[applicable_key])
-                    )
-                else:
-                    next_key = min(larger_dates)
-                    factor = self.discount_factors[applicable_key] + (
-                        at_date - applicable_key
-                    ) * (
-                        self.discount_factors[next_key]
-                        - self.discount_factors[applicable_key]
-                    ) / (
-                        next_key - applicable_key
-                    )
-                    repayment_amount = repayment_amount - round(
-                        repayment_amount * factor
-                    )
+            larger_dates = [
+                date_factor
+                for date_factor in self.discount_factors.keys()
+                if date_factor > period["from_date"]
+            ]
+            repayment_amount = discount_amount(repayment_amount,
+                                                       at_date,
+                                                       self.discount_factors)
         return repayment_amount
 
     def _discount_interest(self, interest_amount, at_date, period):
@@ -304,7 +320,11 @@ class CommonStockValue():
                 / len(self.history_list))
 
     def value(self, at_date=None):
-        """ Calculate the estimated value at at_date """
+        """ Calculate the estimated value at at_date 
+    
+        Contrary to the comment in this module, asking for a valuation
+        of a share on a date before the first history date will fail.
+        """
 
         if at_date == None:
             self.at_date = date.now()
