@@ -48,9 +48,11 @@ def discount_amount(undiscounted_amount, at_date, discount_factors):
     # Zero or one discount factor:
     if applicable_factors is None:
         if discount_factors:
+            choosen_factor = 0
             for start_date, factor in discount_factors.items():
-                applicable_factor = (start_date, factor)
-            return undiscounted_amount - round(undiscounted_amount * factor)
+                if start_date <= at_date:
+                    choosen_factor = factor
+            return undiscounted_amount - round(undiscounted_amount * choosen_factor)
         return undiscounted_amount
 
     # Otherwise more discount factors => interpolate
@@ -170,43 +172,6 @@ class LoanValue:
                                                        self.discount_factors)
         return repayment_amount
 
-    def _discount_interest(self, interest_amount, at_date, period):
-        """Discount an interest amount"""
-
-        date_factors = [
-            date_factor
-            for date_factor in self.discount_factors.keys()
-            if date_factor <= period["from_date"]
-        ]
-        if date_factors:
-            applicable_key = max(date_factors)
-            if applicable_key == at_date:
-                interest_amount = round(
-                    interest_amount * (1 - self.discount_factors[applicable_key])
-                )
-            else:
-                larger_dates = [
-                    date_factor
-                    for date_factor in self.discount_factors.keys()
-                    if date_factor > period["from_date"]
-                ]
-                if not larger_dates:
-                    interest_amount = round(
-                        interest_amount * (1 - self.discount_factors[applicable_key])
-                    )
-                else:
-                    next_key = min(larger_dates)
-                    factor = self.discount_factors[applicable_key] + (
-                        at_date - applicable_key
-                    ) * (
-                        self.discount_factors[next_key]
-                        - self.discount_factors[applicable_key]
-                    ) / (
-                        next_key - applicable_key
-                    )
-                    interest_amount = interest_amount - round(interest_amount * factor)
-        return interest_amount
-
     def future_interest(self):
         """Calculate future interest
 
@@ -231,9 +196,9 @@ class LoanValue:
             interest_this_period = interest.amount_cents()
             # apply discounting
             if self.discount_factors:
-                interest_this_period = self._discount_interest(
-                    interest_this_period, period["from_date"], period
-                )
+                interest_this_period = discount_amount(interest_this_period,
+                                                       period["from_date"],
+                                                       self.discount_factors)
             interest_estimate += interest_this_period
         return interest_estimate
 

@@ -210,7 +210,7 @@ class TestWithDiscountingInterest(unittest.TestCase):
                 "start_balance" : 123_500,
                 "interest_frac" : 0.07}]
         discount_factors = {date(2023, 7, 1) : 0.02,
-                            date(2023,2, 1) : 0.1,
+                            date(2023,8, 1) : 0.1,
                             date(2024,8, 3) : 0.015}
         loan = LoanValue(period_list, discount_factors=discount_factors)
         self.assertEqual(loan.future_interest(),
@@ -234,7 +234,7 @@ class TestWithDiscountingInterest(unittest.TestCase):
                             date(2024, 1, 24) : 0.12}
         loan = LoanValue(period_list, discount_factors=discount_factors)
         self.assertEqual(loan.future_interest(),
-                         4772,
+                         4773,
                          "Incorrect discount interpolation")
 
     def test_date_beyond_last_rate(self):
