@@ -24,6 +24,7 @@ individual instrument calculation to see how this pans out for the different
 financial instruments.
 """
 
+from datetime import date
 from monetary_models.interests import Interest
 from monetary_models.interpolate import interpolate
 from itertools import pairwise
@@ -42,7 +43,7 @@ def discount_amount(undiscounted_amount, at_date, discount_factors):
     applicable_factors = None
     for factor in pairwise(discount_factors):
         if (factor[0] <= at_date
-            and  factor[1] >= at_date):
+          and factor[1] >= at_date):
             applicable_factors = factor
             break
     # Zero or one discount factor:
@@ -52,7 +53,8 @@ def discount_amount(undiscounted_amount, at_date, discount_factors):
             for start_date, factor in discount_factors.items():
                 if start_date <= at_date:
                     choosen_factor = factor
-            return undiscounted_amount - round(undiscounted_amount * choosen_factor)
+            return undiscounted_amount - round(undiscounted_amount
+                                               * choosen_factor)
         return undiscounted_amount
 
     # Otherwise more discount factors => interpolate
@@ -65,7 +67,7 @@ def discount_amount(undiscounted_amount, at_date, discount_factors):
         applicable_factors[1] - applicable_factors[0]
     )
 
-    return(undiscounted_amount - round(
+    return (undiscounted_amount - round(
         undiscounted_amount * factor
     ))
 
@@ -113,7 +115,8 @@ class LoanValue:
         """Calculate the total interest from the list of periods"""
 
         posted_periods = [
-            period for period in self.period_list if "interest_posted" in period
+            period for period in self.period_list
+            if "interest_posted" in period
         ]
         total_interest = 0
         for period in posted_periods:
@@ -146,7 +149,8 @@ class LoanValue:
                         )
             else:
                 discounted_sum = (
-                    posted_periods[0]["principal"] - posted_periods[-1]["principal"]
+                    posted_periods[0]["principal"]
+                    - posted_periods[-1]["principal"]
                 )
             return discounted_sum
         return 0
@@ -161,15 +165,9 @@ class LoanValue:
         ]
 
         if date_factors:
-            applicable_key = max(date_factors)
-            larger_dates = [
-                date_factor
-                for date_factor in self.discount_factors.keys()
-                if date_factor > period["from_date"]
-            ]
             repayment_amount = discount_amount(repayment_amount,
-                                                       at_date,
-                                                       self.discount_factors)
+                                               at_date,
+                                               self.discount_factors)
         return repayment_amount
 
     def future_interest(self):
@@ -239,11 +237,12 @@ class DepositValue(LoanValue):
 
     pass
 
-class CommonStockValue():
-    """ This class holds the value of one share. 
 
-    From the input the value of a share of common stock is calculated. The 
-    value of the stock at market and the expected dividends. The value of the 
+class CommonStockValue():
+    """ This class holds the value of one share.
+
+    From the input the value of a share of common stock is calculated. The
+    value of the stock at market and the expected dividends. The value of the
     stock is discounted at the date of the "expected sale" of the asset. See
     the documentation for more information.
 
@@ -263,35 +262,36 @@ class CommonStockValue():
     dividend = "dividend"
 
     def __init__(self, history_list):
- 
+
         self.history_list = history_list
 
     def growth_share_value(self):
-        """ From the history list we calculate the mean value increase per share """
+        """ From the history list we calculate the mean value increase
+            per share """
 
         sum_values = 0
         for item_no, history_item in enumerate(self.history_list):
             if item_no == 0:
                 continue
             sum_values += (history_item[self.share_price]
-                           - self.history_list[item_no -1][self.share_price])
+                           - self.history_list[item_no - 1][self.share_price])
         return sum_values // (len(self.history_list) - 1)
 
     def mean_dividend(self):
         """ From the history list we calculate the mean dividend """
 
-        return round(sum([history_item[self.dividend] 
-                    for history_item in self.history_list])
-                / len(self.history_list))
+        return round(sum([history_item[self.dividend]
+                     for history_item in self.history_list])
+                     / len(self.history_list))
 
     def value(self, at_date=None):
-        """ Calculate the estimated value at at_date 
-    
+        """ Calculate the estimated value at at_date
+
         Contrary to the comment in this module, asking for a valuation
         of a share on a date before the first history date will fail.
         """
 
-        if at_date == None:
+        if at_date is None:
             self.at_date = date.now()
         else:
             self.at_date = at_date
@@ -308,10 +308,11 @@ class CommonStockValue():
                 at_start = (self.history_list[item_no - 1][self.date_measured],
                             self.history_list[item_no - 1][self.share_price])
                 at_end = (item[self.date_measured],
-                            item[self.share_price])
+                          item[self.share_price])
                 dates = [at_date]
                 result_price = interpolate(at_start, at_end, dates)[0][1]
                 # print("Price is", result_price)
         if result_price is None:
-            raise CannotCalculateValueAt(f"No price could be determined for {at_date}")
+            raise CannotCalculateValueAt("No price could be determined "
+                                         f"for {at_date}")
         return result_price

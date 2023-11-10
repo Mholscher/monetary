@@ -15,25 +15,28 @@
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with monetary.  If not, see <http://www.gnu.org/licenses/>.
 
-""" This module contains a recalculating model for deprecation.  It supports 
+""" This module contains a recalculating model for deprecation.  It supports
     a way to deprecate an asset by yearly revaluing an asset and recalculate
     the deprecation based on this new amount.
     """
 
 from datetime import date
-from dataclasses import dataclass
 from dateutil.relativedelta import relativedelta
 from monetary_models.deprecate import DeprecationSchedule
+
 
 class ReplacementValueAtPurchaseDateError(ValueError):
     """ Cannot have a separate replacement value at purchase date """
 
     pass
 
+
 class PreviousDeprecationAtPurchaseDateError(ValueError):
     """ Cannot have previous deprecation at purchase date """
 
     pass
+
+
 class RecalcDeprecationSchedule(DeprecationSchedule):
     """ The schedule for a deprecation with revaluing each report date
 
@@ -49,19 +52,19 @@ class RecalcDeprecationSchedule(DeprecationSchedule):
     """
 
     def __init__(self, purchase_amount, purchase_date=date.today(),
-                       first_reporting_date=date.today(), deprecate_years=5,
-                       value_at_end=0, **kwargs):
-        super().__init__(purchase_amount, purchase_date, 
-                         first_reporting_date=first_reporting_date, 
+                 first_reporting_date=date.today(), deprecate_years=5,
+                 value_at_end=0, **kwargs):
+        super().__init__(purchase_amount, purchase_date,
+                         first_reporting_date=first_reporting_date,
                          deprecate_years=deprecate_years,
                          value_at_end=value_at_end, **kwargs)
-        self.calculation_date = (kwargs["calculation_date"] 
-                                    if  "calculation_date" in kwargs
-                                    else purchase_date)
-        self.replacement_value = (kwargs["replacement_value"] 
-                                     if "replacement_value"in kwargs
-                                     else 0)
-        self.previous_yearly_deprecation = (kwargs["previous_yearly_deprecation"] 
+        self.calculation_date = (kwargs["calculation_date"]
+                                 if  "calculation_date" in kwargs
+                                 else purchase_date)
+        self.replacement_value = (kwargs["replacement_value"]
+                                  if "replacement_value"in kwargs
+                                  else 0)
+        self.previous_yearly_deprecation = (kwargs["previous_yearly_deprecation"]
                                      if "previous_yearly_deprecation"in kwargs
                                      else 0)
         if (self.calculation_date == self.purchase_date
