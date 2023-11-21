@@ -4,7 +4,6 @@ Babel==2.10.3
 black==23.7.0
 blessed==1.20.0
 blessings==1.7
-bpython==0.24
 certifi==2023.7.22
 charset-normalizer==2.1.0
 curtsies==0.4.1
@@ -21,7 +20,6 @@ iso4217==1.11.20220401
 Jinja2==3.1.2
 MarkupSafe==2.1.1
 mccabe==0.7.0
--e git+https://github.com/Mholscher/monetary.git@23fb495eebff987a15b9befeb4f1d93e6394042a#egg=monetary
 mypy-extensions==1.0.0
 packaging==23.1
 pathspec==0.11.2

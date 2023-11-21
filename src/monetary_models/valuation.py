@@ -25,13 +25,20 @@ financial instruments.
 """
 
 from datetime import date
+from itertools import pairwise
+from dateutil.relativedelta import relativedelta
 from monetary_models.interests import Interest
 from monetary_models.interpolate import interpolate
-from itertools import pairwise
 
 
 class CannotCalculateValueAt(ValueError):
     """ A value cannot be calculated with the current input """
+
+    pass
+
+
+class HistoryListTooShort(ValueError):
+    """ A history list has a minimum number of values """
 
     pass
 
@@ -261,20 +268,24 @@ class CommonStockValue():
     share_price = "share_price"
     dividend = "dividend"
 
-    def __init__(self, history_list):
+    def __init__(self, history_list, discount_factors=None):
 
+        if len(history_list) < 2:
+            raise HistoryListTooShort("A history should contain at least 2 years")
         self.history_list = history_list
+        if discount_factors:
+            self.discount_factors = discount_factors
+        else:
+            self.discount_factors = dict()
 
     def growth_share_value(self):
         """ From the history list we calculate the mean value increase
             per share """
 
         sum_values = 0
-        for item_no, history_item in enumerate(self.history_list):
-            if item_no == 0:
-                continue
-            sum_values += (history_item[self.share_price]
-                           - self.history_list[item_no - 1][self.share_price])
+        for older_item, newer_item in pairwise(self.history_list):
+             sum_values += (newer_item[self.share_price]
+                           - older_item[self.share_price])
         return sum_values // (len(self.history_list) - 1)
 
     def mean_dividend(self):
@@ -316,3 +327,25 @@ class CommonStockValue():
             raise CannotCalculateValueAt("No price could be determined "
                                          f"for {at_date}")
         return result_price
+
+    def estimated_value(self, at_date):
+        """ Calculate the estimated value based on experience """
+
+        share_price_growth = self.growth_share_value()
+        estimated_dividend = self.mean_dividend()
+        since_last_measured = relativedelta(at_date, 
+                                            self.history_list[-1]
+                                            [self.date_measured])
+        value_growth = since_last_measured.years * share_price_growth
+        value_growth += round(share_price_growth * 
+                              since_last_measured.months / 12)
+        value_growth += round(share_price_growth *  
+                              since_last_measured.days / 12 / 31)
+        value_growth = discount_amount(value_growth, at_date, self.discount_factors)
+        dividends = since_last_measured.years * estimated_dividend
+        dividends = discount_amount(dividends, at_date, self.discount_factors)
+        # print("value change: ", value_growth, "Dividends", dividends)
+        # print("returns", (value_growth + dividends + self.history_list[-1]
+        #                                     [self.share_price]))
+        return (value_growth + dividends + self.history_list[-1]
+                                            [self.share_price])

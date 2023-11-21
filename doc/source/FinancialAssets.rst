@@ -45,7 +45,7 @@ Stocks and bonds
 
 For stocks and bonds we will calculate the return in dividend or interest and the changes in value of the asset.
 
-A major question here is the uncertainty of the returns on these assets. Dividends are following the performance of the company and the value of stocks and bonds are influenced by the economic outlook as well. We will not take the risks of the assets into account [usediscount]_. Value will be based on the valuation of the asset in the past. We will apply the mean growth over a past periods to estimate the growth in the future and make correcting it for uncertainty possible. The software has no opinion on the amount of data needed to get a reasonable estimate; it will happily base the expectation on a single year. Personally, I would find that nonsense.
+A major question here is the uncertainty of the returns on these assets. Dividends are following the performance of the company and the value of stocks and bonds are influenced by the economic outlook as well. We will not take the risks of the assets into account [usediscount]_. Value will be based on the valuation of the asset in the past. We will apply the mean growth over a past periods to estimate the growth in the future and make correcting it for uncertainty possible. The software has a basic opinion on the amount of data needed to get a reasonable estimate; it will happily base the expectation on two years. Personally, I would find that nonsense. No history periods or one value will cause an error.
 
 To this end the valuation will be accepting a list of dates and corresponding values.
 
@@ -63,17 +63,18 @@ The values are used to determine the historic growth of the value, which is inte
 
 It is the sum of the difference divided by the duration in years.
 
-The amount obtained is discounted with a discount rate.
-
 For the dividend we sum the didvidend amounts and divide by the number of years:
 
     Expected dividend = (12 + 18 + 3 +20) / 4
 
 For each year from now until the "maturity" date we discount the expected dividend with the applicable discount rate. The sum of the discounted amounts is the value resulting from dividends to be received.
 
-If the "maturity" date is not a full number of years ahead, we will calculate a part of a period with the number of actual days (:ref:`interpolation`), before discounting the amount.
+For stocks there is no maturity date. The calculation though needs an end date, like the maturity date for bonds. We will name this "maturity" date "expected selling date" from here.
 
-For stocks there is no maturity date. That is why "maturity" is quoted. The calculation needs an end date, like the maturity date for bonds.
+If the expected selling date is not a full number of years ahead, we will calculate a part of a period with the number of actual days (:ref:`interpolation`), before discounting the amount.
+
+The value at the expected selling date is discounted.
+
 
 .. rubric:: Footnotes
 

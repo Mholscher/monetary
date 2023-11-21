@@ -499,4 +499,53 @@ class TestStockValue(unittest.TestCase):
         stock_value = CommonStockValue(self.historical)
         with self.assertRaises(ValueError):
             self.assertEqual(stock_value.value(date(2024, 8, 1)), 2066,
-                             "Incorrect value at interpolated date")
+                             "Incorrect value at future date")
+
+    def test_too_little_history(self):
+        """ No history or one year only of history will fail """
+
+        historical = dict()
+        with self.assertRaises(ValueError):
+            stock_value = CommonStockValue(historical)
+        historical = [dict([(self.date_measured, date(2021, 7, 1)),
+                          (self.share_price, 1345),
+                          (self.dividend, 18.67)])]
+        with self.assertRaises(ValueError):
+            stock_value = CommonStockValue(historical)
+
+
+class TestFutureStockValueEstimate(unittest.TestCase):
+
+    def setUp(self):
+
+
+        self.date_measured = "date_measured"
+        self.share_price = "share_price"
+        self.dividend = "dividend"
+        self.historical = [{self.date_measured : date(2021, 2, 1),
+                           self.share_price : 2150,
+                           self.dividend : 115 },
+                           {self.date_measured : date(2022, 2, 1),
+                           self.share_price : 2250,
+                           self.dividend : 120 },
+                           {self.date_measured : date(2023, 2, 1),
+                           self.share_price : 2080,
+                           self.dividend : 110 }]
+        self.discount_factors = {date(2024, 1, 1) : 0.02,
+                                date(2026, 1, 1) : 0.03}
+
+    def test_future_value(self):
+        """ Test a future value can be calculated """
+
+        stock_value = CommonStockValue(self.historical, self.discount_factors)
+        self.assertEqual(stock_value.estimated_value(at_date=date(2024, 2, 1)),
+                         2159,
+                         "Incorrect future value")
+
+    def test_future_value_broken_period(self):
+        """ Test a future value can be calculated """
+
+        stock_value = CommonStockValue(self.historical, self.discount_factors)
+        self.assertEqual(stock_value.estimated_value(at_date=date(2024, 5, 12)),
+                         2148,
+                         "Incorrect future value")

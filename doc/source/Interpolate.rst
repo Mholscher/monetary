@@ -11,7 +11,7 @@ The calculation is done so:
 
     the fraction of  until the date of the total period times the difference between the amount at the end date and the start date plus the amount at the start date.
 
-An example:
+An example::
 
     beginning of period
         date is 1-1-2023
@@ -23,7 +23,7 @@ An example:
         12-1-2023
         24-1-2023
 
-The calculation then is done as:
+The calculation then is done as::
 
     12 / 31 * (15000 - 18000) + 18000
 
@@ -31,7 +31,7 @@ The calculation then is done as:
     * the change amount is 15000 - 18000
     * the amount at start is 18000
 
-Like wise for the 24th:
+Like wise for the 24th::
 
     24 / 31 * (15000 - 18000) + 18000
 
