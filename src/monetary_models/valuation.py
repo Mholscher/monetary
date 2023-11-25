@@ -300,6 +300,9 @@ class CommonStockValue():
 
         Contrary to the comment in this module, asking for a valuation
         of a share on a date before the first history date will fail.
+
+        Dates that are beyond the last date in the history, cannot be processed
+        by this method, see :py:meth:`~CommonStockValue.estimated_value`.
         """
 
         if at_date is None:
@@ -329,10 +332,18 @@ class CommonStockValue():
         return result_price
 
     def estimated_value(self, at_date):
-        """ Calculate the estimated value based on experience """
+        """ Calculate the estimated value based on experience 
+
+        Dates that are before the last date in the history, cannot be processed
+        by this method, see :py:meth:`~CommonStockValue.value`.
+
+        """
 
         share_price_growth = self.growth_share_value()
         estimated_dividend = self.mean_dividend()
+        if at_date <= self.history_list[-1][self.date_measured]:
+            raise CannotCalculateValueAt("Cannot calculate estimate" 
+                                         f" for {at_date}: in history")
         since_last_measured = relativedelta(at_date, 
                                             self.history_list[-1]
                                             [self.date_measured])
@@ -340,7 +351,7 @@ class CommonStockValue():
         value_growth += round(share_price_growth * 
                               since_last_measured.months / 12)
         value_growth += round(share_price_growth *  
-                              since_last_measured.days / 12 / 31)
+                              since_last_measured.days / 365)
         value_growth = discount_amount(value_growth, at_date, self.discount_factors)
         dividends = since_last_measured.years * estimated_dividend
         dividends = discount_amount(dividends, at_date, self.discount_factors)

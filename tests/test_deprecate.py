@@ -52,7 +52,8 @@ class TestDeprecation(unittest.TestCase):
     def test_first_reporting_date(self):
         """ First reporting date cannot be more than 12 months from now """
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, 
+                               msg="Incorrect next reporting not seen"):
             self.schedule = DeprecationSchedule(10000, date(2022, 12, 4),
                                                 date(2024, 1,1), 5)
 

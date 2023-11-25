@@ -107,7 +107,7 @@ class TestActualDaysInterest(unittest.TestCase):
 
         from_date = date(year=2032, month=3, day=1)
         to_date = date(year=2023, month=1, day=12)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Date order is wrong, no error"):
             interest_amount = Interest(from_date=from_date,
                                        to_date=to_date,
                                        start_balance=155000,
@@ -385,7 +385,7 @@ class TestCompoundInterest(unittest.TestCase):
 
         from_date = date(year=2021, month=12, day=5)
         to_date = date(year=2022, month=1, day=10)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Next interest date too distant"):
             interest_amount = Interest(from_date=from_date, to_date=to_date,
                                    start_balance=35000, interest_frac=0.09,
                                    calculation_method=Interest.ACTUAL_PERIODS,

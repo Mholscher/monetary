@@ -161,7 +161,8 @@ class TestCheckParameters(unittest.TestCase):
     def test_no_replacement_value_at_purchase(self):
         """ Cannot have replacement value at purchase """
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, 
+                               msg="Replacement value missing not seen"):
             deprecation_schedule =\
                 ex.RecalcDeprecationSchedule(155000,
                                             date(2022, 8, 3),
@@ -177,7 +178,8 @@ class TestCheckParameters(unittest.TestCase):
     def test_no_previous_year_deprecation(self):
         """ At start there cannot be previous year deprecation  """
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError,
+                               msg="Previous deprecation missing not seen"):
             deprecation_schedule =\
                 ex.RecalcDeprecationSchedule(175000,
                                             date(2022, 7, 3),

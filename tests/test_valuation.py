@@ -548,4 +548,32 @@ class TestFutureStockValueEstimate(unittest.TestCase):
         stock_value = CommonStockValue(self.historical, self.discount_factors)
         self.assertEqual(stock_value.estimated_value(at_date=date(2024, 5, 12)),
                          2148,
-                         "Incorrect future value")
+                         "Incorrect future value with broken period")
+
+    def test_future_value_for_more_years(self):
+        """ More than one year and discounting should still work """
+
+        self.discount_factors[date(2025, 1, 1)] = 0.023
+        self.discount_factors[date(2027, 1, 1)] = 0.025
+        stock_value = CommonStockValue(self.historical, self.discount_factors)
+        self.assertEqual(stock_value.estimated_value(at_date=date(2026, 3, 1)),
+                         2312,
+                         "Incorrect future value for longer period")
+
+    def test_no_discount_factors(self):
+        """ No discount factors returns undiscounted amounts """
+
+        self.discount_factors = dict()
+        stock_value = CommonStockValue(self.historical, self.discount_factors)
+        self.assertEqual(stock_value.estimated_value(at_date=date(2026, 3, 1)),
+                         2317,
+                         "No discount wrong value")
+        
+    def test_estimate_value_history_fails(self):
+        """ Specifying a date for which there is history fails estimate """
+
+        stock_value = CommonStockValue(self.historical, self.discount_factors)
+        with self.assertRaises(ValueError, msg="Accepts last date in history"):
+            value = stock_value.estimated_value(at_date=date(2023, 2, 1))
+        with self.assertRaises(ValueError, msg="Accepts date in history"):
+            value = stock_value.estimated_value(at_date=date(2022, 8, 1))

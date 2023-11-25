@@ -39,11 +39,11 @@ class TestMonthlyPayment(unittest.TestCase):
     def test_parms_required(self):
         """ All parameters are required """
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Principal missing not seen"):
             Annuity.calc_payment(principal=0,
                                  interest_frac=.01,
                                  number_periods=85)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Periods missing not seen"):
             Annuity.calc_payment(principal=10000,
                                  interest_frac=.01,
                                  number_periods=0)
@@ -51,7 +51,7 @@ class TestMonthlyPayment(unittest.TestCase):
     def test_interest_frac_none(self):
         """ If interest fraction is none, abort """
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Interest missing not seen"):
             Annuity.calc_payment(principal=10000,
                                  interest_frac=None,
                                  number_periods=85)
