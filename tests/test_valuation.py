@@ -577,3 +577,13 @@ class TestFutureStockValueEstimate(unittest.TestCase):
             value = stock_value.estimated_value(at_date=date(2023, 2, 1))
         with self.assertRaises(ValueError, msg="Accepts date in history"):
             value = stock_value.estimated_value(at_date=date(2022, 8, 1))
+
+    def test_too_far_in_future(self):
+        """ Beyond the horizon uses last known discount """
+
+        stock_value = CommonStockValue(self.historical, self.discount_factors)
+        self.assertEqual(stock_value.estimated_value(at_date=date(2027, 3, 1)),
+                         2387,
+                         "Incorrect future value for discounting after"
+                         " end of table")
+        

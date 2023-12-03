@@ -260,7 +260,7 @@ class CommonStockValue():
         :share_value: The value of shares in the smallest denomination (like cents or pennies)
         :dividend_paid: The dividend paid at or for the period denoted by the value date
 
-    For discounting the discount factors are passed in. See the LoanValue documentation 
+    For discounting the discount factors are passed in. See the :py:class:`~LoanValue` documentation 
     for the format these are in.
     """
 
