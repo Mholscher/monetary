@@ -17,7 +17,9 @@
 import sys
 from datetime import date
 import unittest
-from monetary_models.valuation import LoanValue, DepositValue, CommonStockValue
+from monetary_models.valuation import (LoanValue, DepositValue, CommonStockValue,
+                                      DiscountFactors)
+
 
 class TestThisMonthValue(unittest.TestCase):
 
@@ -586,4 +588,24 @@ class TestFutureStockValueEstimate(unittest.TestCase):
                          2387,
                          "Incorrect future value for discounting after"
                          " end of table")
+
+class TestCreatChangeDiscounts(unittest.TestCase):
+
+    def test_create_factor(self):
+        """ Create a dictionary like discount factor table """
+
+        discount_factors = DiscountFactors({date(2023, 7, 1) : 0.02,
+                            date(2023,8, 1) : 0.1,
+                            date(2024,8, 3) : 0.015})
+        self.assertEqual(discount_factors[date(2023, 8, 1)], 0.1,
+                         "Incorrect discount factor")
+
+    def test_out_order_date_fails(self):
+        """ Dates must be in ascending order """
+
+        with self.assertRaises(ValueError):
+            discount_factors = DiscountFactors({date(2023, 7, 1) : 0.02,
+                                                date(2025,8, 1) : 0.1,
+                                                date(2024,8, 3) : 0.015})
+
         

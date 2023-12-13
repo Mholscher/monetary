@@ -43,6 +43,12 @@ class HistoryListTooShort(ValueError):
     pass
 
 
+class KeyOrderError(ValueError):
+    """ Keys in discount factors must be in ascending order """
+
+    pass
+
+
 def discount_amount(undiscounted_amount, at_date, discount_factors):
     """ Discount an amount at a given date with discount factor(s) """
 
@@ -77,6 +83,25 @@ def discount_amount(undiscounted_amount, at_date, discount_factors):
     return (undiscounted_amount - round(
         undiscounted_amount * factor
     ))
+
+
+class DiscountFactors(dict):
+    """ This class holds a group of discount factors.
+
+    A discount factor consists of a date and the associated factor.
+    The factor is the discount factor to be used for an amount evaluation on
+    said date. The factor is the fraction of the amount that should be discounted.
+
+    The mapping must be a data structure that has the
+    collections.abc.MutableMapping interface. The most common structure is dict.
+    """
+
+    def __init__(self, mapping):
+
+        for first_date, second_date in pairwise(mapping):
+            if first_date > second_date:
+                raise KeyOrderError("Dates must be in order")
+        super().__init__(mapping)
 
 
 class LoanValue:
