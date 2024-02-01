@@ -1,5 +1,3 @@
-.. _deprecation:
-
 Deprecating capital goods
 =========================
 

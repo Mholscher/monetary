@@ -103,6 +103,12 @@ class DiscountFactors(dict):
                 raise KeyOrderError("Dates must be in order")
         super().__init__(mapping)
 
+    def __setitem__(self, key, value):
+
+        keys_reversed = reversed(self.keys())
+        if next(keys_reversed) > key:
+            raise ValueError("Keys must be added in order")
+        super().__setitem__(key, value)
 
 class LoanValue:
     """The class holds the liability value for one or more periods.
@@ -385,3 +391,44 @@ class CommonStockValue():
         #                                     [self.share_price]))
         return (value_growth + dividends + self.history_list[-1]
                                             [self.share_price])
+
+
+class Fee():
+    """ A fee consists of an amount, a period (year, month etc.) and end date """
+
+    def __init__(self, amount, period=None, end_date=None):
+
+        self.amount = amount
+        if period:
+            self.period = period
+        else:
+            self.period = 1  # Yearly
+        self.end_date = end_date
+
+class LeaseCostValue():
+    """ The current cost of a lease to the company.
+
+    the cost of the lease is the sum of the discounted value of all lease
+    payments, minus the remaining discounted value of the good at the end
+    of the lease term.
+    """
+
+    def __init__(self, lease_fee, current_asset_value, borrowing_rate,
+                 remaining_value=0, discount_factors=None, at_date=None):
+
+        self.lease_fee = lease_fee
+        self.asset_value = current_asset_value
+        self.borrowing_rate = borrowing_rate
+        self.discount_factors = discount_factors
+        self.at_date = at_date
+
+    def estimated_value(self):
+        """ An estimate of the current cost of the good """
+
+        period = relativedelta(self.lease_fee.end_date, self.at_date)
+        # print(period)
+        if period.months > 0 or period.days > 0:
+            num_payments = period.years + 1
+        else:
+            num_payments = period.years
+        return self.lease_fee.amount * num_payments

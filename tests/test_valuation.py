@@ -18,7 +18,7 @@ import sys
 from datetime import date
 import unittest
 from monetary_models.valuation import (LoanValue, DepositValue, CommonStockValue,
-                                      DiscountFactors)
+                                      DiscountFactors, LeaseCostValue, Fee)
 
 
 class TestThisMonthValue(unittest.TestCase):
@@ -589,7 +589,13 @@ class TestFutureStockValueEstimate(unittest.TestCase):
                          "Incorrect future value for discounting after"
                          " end of table")
 
-class TestCreatChangeDiscounts(unittest.TestCase):
+class TestCreateChangeDiscounts(unittest.TestCase):
+
+    def setUp(self):
+
+        self.discount_factors = DiscountFactors({date(2023, 7, 1) : 0.02,
+                            date(2023,8, 1) : 0.1,
+                            date(2024,8, 3) : 0.015})
 
     def test_create_factor(self):
         """ Create a dictionary like discount factor table """
@@ -608,4 +614,61 @@ class TestCreatChangeDiscounts(unittest.TestCase):
                                                 date(2025,8, 1) : 0.1,
                                                 date(2024,8, 3) : 0.015})
 
+    def test_adding_discount_factor_fails(self):
+        """ We cannot add a discount factor dated before the last """
+
+        with self.assertRaises(ValueError):
+            self.discount_factors[date(2023, 12, 1)] = 0.02
+
+    def test_add_discount_factor_in_order(self):
+        """ We can add a discount factor for a later date """
+
+        self.discount_factors[date(2025, 12, 1)] = 0.02
+        self.assertEqual(next(reversed(self.discount_factors)),
+                         date(2025, 12, 1),
+                         "Incorrect date at end of discount factors")
         
+    def test_change_last_discount_factor(self):
+        """ We can change the last discount factor"""
+
+        self.discount_factors[date(2024, 8, 3)] = 0.02
+        self.assertEqual(self.discount_factors[date(2024, 8, 3)],
+                         0.02,
+                         "Incorrect factor following change of discount factor")
+
+class TestLeaseCostValue(unittest.TestCase):
+
+    def setUp(self):
+
+        self.discount_factors = DiscountFactors({date(2023, 12, 1) : 0.02,
+                            date(2024,10, 1) : 0.05,
+                            date(2025,8, 1) : 0.07})
+
+    def test_undiscounted_simple_case(self):
+        """ Calculate cost without discount for a short period """
+
+        fee = Fee(50, end_date=date(2025, 1, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
+                                     borrowing_rate=0.03, 
+                                     at_date=date(2023, 2, 1))
+        self.assertEqual(lease_cost.estimated_value(),
+                         100, "Incorrect lease cost")
+        
+    def test_case_exact_num_periods(self):
+
+        fee = Fee(45, end_date=date(2025, 2, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
+                                     borrowing_rate=0.03, 
+                                     at_date=date(2023, 2, 1))
+        self.assertEqual(lease_cost.estimated_value(),
+                         90, "Incorrect lease cost")
+
+    def test_case_one_payment(self):
+
+        fee = Fee(60, end_date=date(2025, 1, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
+                                     borrowing_rate=0.03, 
+                                     at_date=date(2024, 12, 11))
+        self.assertEqual(lease_cost.estimated_value(),
+                         60, "Incorrect lease cost")
+

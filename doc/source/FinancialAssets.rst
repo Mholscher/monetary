@@ -30,15 +30,25 @@ The repayment will be governed by a schedule and the calculation of the value of
 
 Other than for loans, there is a debtor risk being run. You are not sure the debtor will pay in time or will pay *at all*. This risk will be ignored for now. It does have an influence on the valuation of the deposit.
 
-A buy-back agreement
---------------------
-
-On a buy back agreement the value of the agreement is the  current value of the amount that is received on a moment in the future. Strictly that value needs to be the discounted value at this moment of the future receipt.
-
-Discounting a future income is dependent on the interest rate and the risk profile of the contract. For a buy-back agreement there is a debtor risk (defaulting of the counterparty) and the risk of the asset that is to be sold not providing the expected returns. Neither of the two risks can be examined without knowledge of the situation of the company. 
-
 A leasing agreement
 -------------------
+
+Acccording to IFRS16 the calculation of the discount of amounts payable and received on a lease is based on the "interest rate implicit in the lease" or the "lessee's incremental borrowing rate".
+
+Interest rate implicit in the lease is the rate of interest that causes the present value of lease payments and the unguaranteed residual value to equal the sum of the fair value of the underlying asset, and any initial direct costs of the lessor.
+
+The incremental borrowing rate is a interest rate that reflects the rate it would have to pay to borrow over a similar term to the lease term with a similar security to the security (collateral) in the lease, the amount needed to obtain an asset of a similar value to the right-of-use asset arising from the lease in a similar economic environment to that of the lease.
+
+These are based on rates and amounts strongly dependent on the situation of the lessor and lessee. We cannot determine that in this library, so we will expect these to be supplied.
+
+The data required to determine expected cost of such an agreement is:
+
+    :the lease fee: the amount payable per period of the lease term
+    :remaining value: the value remaining in the leased good at the end of the lease term
+    :incremental borrowing rate: the interest rate payable if the lessee would need to borrow the current value of the item
+    :end date: the end date of the lease term
+
+Furthermore of course all payments/values have to be discounted, so we need discount factors.
 
 Stocks and bonds
 ----------------
@@ -63,7 +73,7 @@ The values are used to determine the historic growth of the value, which is inte
 
 It is the sum of the difference divided by the duration in years.
 
-For the dividend we sum the didvidend amounts and divide by the number of years:
+For the dividend we sum the dividend amounts and divide by the number of years:
 
     Expected dividend = (12 + 18 + 3 +20) / 4
 
