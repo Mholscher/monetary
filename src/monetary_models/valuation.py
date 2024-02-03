@@ -43,6 +43,11 @@ class HistoryListTooShort(ValueError):
     pass
 
 
+class UnknownPeriodError(ValueError):
+    """ A period in a Fee has an unknown value """
+
+    pass
+
 class KeyOrderError(ValueError):
     """ Keys in discount factors must be in ascending order """
 
@@ -396,6 +401,9 @@ class CommonStockValue():
 class Fee():
     """ A fee consists of an amount, a period (year, month etc.) and end date """
 
+    FEE_YEARLY = 1
+    FEE_MONTHLY = 12
+
     def __init__(self, amount, period=None, end_date=None):
 
         self.amount = amount
@@ -427,8 +435,17 @@ class LeaseCostValue():
 
         period = relativedelta(self.lease_fee.end_date, self.at_date)
         # print(period)
-        if period.months > 0 or period.days > 0:
-            num_payments = period.years + 1
+        if self.lease_fee.period == Fee.FEE_YEARLY:
+            if period.months > 0 or period.days > 0:
+                num_payments = period.years + 1
+            else:
+                num_payments = period.years
+        elif self.lease_fee.period == Fee.FEE_MONTHLY:
+            if period.days > 0:
+                num_payments = period.years *12 + period.months +  1
+            else:
+                num_payments = period.years *12 + period.months
         else:
-            num_payments = period.years
+            raise UnknownPeriodError("Unknown period"
+                                     f" {self.lease_fee.period}")
         return self.lease_fee.amount * num_payments

@@ -653,22 +653,44 @@ class TestLeaseCostValue(unittest.TestCase):
                                      at_date=date(2023, 2, 1))
         self.assertEqual(lease_cost.estimated_value(),
                          100, "Incorrect lease cost")
-        
+
     def test_case_exact_num_periods(self):
+        """ For an exact number of years, calculation is correct """
 
         fee = Fee(45, end_date=date(2025, 2, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
                                      borrowing_rate=0.03, 
                                      at_date=date(2023, 2, 1))
-        self.assertEqual(lease_cost.estimated_value(),
-                         90, "Incorrect lease cost")
+        self.assertEqual(lease_cost.estimated_value(),90,
+                         "Incorrect lease cost when dates are"
+                         " exact no of years apart")
 
     def test_case_one_payment(self):
+        """ Calculate one payment fiorm date """
 
         fee = Fee(60, end_date=date(2025, 1, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
                                      borrowing_rate=0.03, 
                                      at_date=date(2024, 12, 11))
         self.assertEqual(lease_cost.estimated_value(),
-                         60, "Incorrect lease cost")
+                         60, "Incorrect lease cost for 1 period")
 
+    def test_monthly_fee(self):
+        """ Calculate a monthly fee cost """
+
+        fee = Fee(15, period=12, end_date=date(2024, 10, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
+                                     borrowing_rate=0.03, 
+                                     at_date=date(2024, 1, 11))
+        self.assertEqual(lease_cost.estimated_value(),
+                         135, "Incorrect lease cost for monthly")
+
+    def test_unknown_fee_period_fails(self):
+        """ Passing in unknown fee period means value error """
+
+        fee = Fee(18, period=9, end_date=date(2024, 10, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=38,
+                                     borrowing_rate=0.03, 
+                                     at_date=date(2024, 1, 11))
+        with self.assertRaises(ValueError):
+            ev = lease_cost.estimated_value()

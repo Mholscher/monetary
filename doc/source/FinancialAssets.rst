@@ -33,7 +33,7 @@ Other than for loans, there is a debtor risk being run. You are not sure the deb
 A leasing agreement
 -------------------
 
-Acccording to IFRS16 the calculation of the discount of amounts payable and received on a lease is based on the "interest rate implicit in the lease" or the "lessee's incremental borrowing rate".
+According to IFRS16 the calculation of the discount of amounts payable and received on a lease is based on the "interest rate implicit in the lease" or the "lessee's incremental borrowing rate".
 
 Interest rate implicit in the lease is the rate of interest that causes the present value of lease payments and the unguaranteed residual value to equal the sum of the fair value of the underlying asset, and any initial direct costs of the lessor.
 
