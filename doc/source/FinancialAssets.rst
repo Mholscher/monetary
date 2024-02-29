@@ -48,8 +48,6 @@ The data required to determine expected cost of such an agreement is:
     :incremental borrowing rate: the interest rate payable if the lessee would need to borrow the current value of the item
     :end date: the end date of the lease term
 
-Furthermore of course all payments/values have to be discounted, so we need discount factors.
-
 Stocks and bonds
 ----------------
 

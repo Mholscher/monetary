@@ -649,7 +649,7 @@ class TestLeaseCostValue(unittest.TestCase):
 
         fee = Fee(50, end_date=date(2025, 1, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
-                                     borrowing_rate=0.03, 
+                                     borrowing_rate=0.0, 
                                      at_date=date(2023, 2, 1))
         self.assertEqual(lease_cost.estimated_value(),
                          100, "Incorrect lease cost")
@@ -659,19 +659,19 @@ class TestLeaseCostValue(unittest.TestCase):
 
         fee = Fee(45, end_date=date(2025, 2, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
-                                     borrowing_rate=0.03, 
+                                     borrowing_rate=0.0, 
                                      at_date=date(2023, 2, 1))
-        self.assertEqual(lease_cost.estimated_value(),90,
+        self.assertEqual(lease_cost.estimated_value(), 135,
                          "Incorrect lease cost when dates are"
                          " exact no of years apart")
 
     def test_case_one_payment(self):
-        """ Calculate one payment fiorm date """
+        """ Calculate one payment for date """
 
         fee = Fee(60, end_date=date(2025, 1, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
-                                     borrowing_rate=0.03, 
-                                     at_date=date(2024, 12, 11))
+                                     borrowing_rate=0.0, 
+                                     at_date=date(2025, 1, 1))
         self.assertEqual(lease_cost.estimated_value(),
                          60, "Incorrect lease cost for 1 period")
 
@@ -680,7 +680,7 @@ class TestLeaseCostValue(unittest.TestCase):
 
         fee = Fee(15, period=12, end_date=date(2024, 10, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
-                                     borrowing_rate=0.03, 
+                                     borrowing_rate=0.0, 
                                      at_date=date(2024, 1, 11))
         self.assertEqual(lease_cost.estimated_value(),
                          135, "Incorrect lease cost for monthly")
@@ -690,7 +690,37 @@ class TestLeaseCostValue(unittest.TestCase):
 
         fee = Fee(18, period=9, end_date=date(2024, 10, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=38,
-                                     borrowing_rate=0.03, 
+                                     borrowing_rate=0.0, 
                                      at_date=date(2024, 1, 11))
         with self.assertRaises(ValueError):
             ev = lease_cost.estimated_value()
+
+    def test_with_borrowing_rate(self):
+        """ Incremental borrowing rate used for discounting  """
+
+        fee = Fee(80, end_date=date(2026, 8, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=28,
+                                     borrowing_rate=0.1, 
+                                     at_date=date(2024, 8, 1))
+        self.assertEqual(lease_cost.estimated_value(),
+                         137, "Incorrect lease cost with borrowing rate")
+
+    def test_borrowing_rate_with_pro_rata(self):
+        """ ICS Borrowing rate for non-full year period """
+
+        fee = Fee(120, end_date=date(2026, 1, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=5000,
+                                     borrowing_rate=0.1, 
+                                     at_date=date(2023, 8, 1))
+        self.assertEqual(lease_cost.estimated_value(),
+                         238, "Incorrect lease cost with pro rata")
+
+    def test_borrowing_rate_only_pro_rata(self):
+        """ ICS Borrowing rate for non-full year period """
+
+        fee = Fee(160, end_date=date(2024, 1, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=5000,
+                                     borrowing_rate=0.06, 
+                                     at_date=date(2023, 8, 1))
+        self.assertEqual(lease_cost.estimated_value(),
+                         63, "Incorrect lease cost for ONLY pro rata")

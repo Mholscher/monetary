@@ -422,12 +422,11 @@ class LeaseCostValue():
     """
 
     def __init__(self, lease_fee, current_asset_value, borrowing_rate,
-                 remaining_value=0, discount_factors=None, at_date=None):
+                 remaining_value=0,at_date=None):
 
         self.lease_fee = lease_fee
         self.asset_value = current_asset_value
         self.borrowing_rate = borrowing_rate
-        self.discount_factors = discount_factors
         self.at_date = at_date
 
     def estimated_value(self):
@@ -436,16 +435,41 @@ class LeaseCostValue():
         period = relativedelta(self.lease_fee.end_date, self.at_date)
         # print(period)
         if self.lease_fee.period == Fee.FEE_YEARLY:
-            if period.months > 0 or period.days > 0:
-                num_payments = period.years + 1
-            else:
-                num_payments = period.years
+            num_month_payments = period.months
+            if period.days:
+                num_month_payments += 1
+            num_year_payments = period.years + 1
         elif self.lease_fee.period == Fee.FEE_MONTHLY:
             if period.days > 0:
-                num_payments = period.years *12 + period.months +  1
+                num_month_payments = period.years *12 + period.months +  1
             else:
-                num_payments = period.years *12 + period.months
+                num_month_payments = period.years *12 + period.months
+            num_year_payments = 0
         else:
             raise UnknownPeriodError("Unknown period"
                                      f" {self.lease_fee.period}")
-        return self.lease_fee.amount * num_payments
+        if self.borrowing_rate:
+            next_interest = (self.lease_fee.end_date -
+                            relativedelta(years=period.years))
+            discounted = 0
+            # First calculate pro-rata period
+            discounted += (self.lease_fee.amount *
+                              (1 - self.borrowing_rate)
+                              * period.months / 12)
+            print("Discounted amount: ", discounted)
+            for period_no in range(1, period.years + 1):
+                if period.months == 0:
+                    discounted += (self.lease_fee.amount *
+                                  (1 - self.borrowing_rate) ** period_no)
+                else:
+                    discounted += (self.lease_fee.amount *
+                                  ((1 - self.borrowing_rate) ** (period_no + 1)
+                                  * (12 - period.months)/12 +
+                                  (1 - self.borrowing_rate) ** (period_no)
+                                  * period.months/12))
+                print("Discounted period:", period_no, discounted)
+            return round(discounted)
+        else:
+            return (self.lease_fee.amount * num_year_payments
+                    if self.lease_fee.period == Fee.FEE_YEARLY
+                    else self.lease_fee.amount * num_month_payments)
