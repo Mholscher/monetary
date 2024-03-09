@@ -48,6 +48,8 @@ The data required to determine expected cost of such an agreement is:
     :incremental borrowing rate: the interest rate payable if the lessee would need to borrow the current value of the item
     :end date: the end date of the lease term
 
+The discounted end value is calculated from the undiscounted value. However, it is not put into the value of the cost of the lease , as it is in a different category.
+
 Stocks and bonds
 ----------------
 

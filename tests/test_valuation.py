@@ -706,7 +706,7 @@ class TestLeaseCostValue(unittest.TestCase):
                          137, "Incorrect lease cost with borrowing rate")
 
     def test_borrowing_rate_with_pro_rata(self):
-        """ ICS Borrowing rate for non-full year period """
+        """ ICS Borrowing rate period containing non-full year period """
 
         fee = Fee(120, end_date=date(2026, 1, 1))
         lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=5000,
@@ -724,3 +724,29 @@ class TestLeaseCostValue(unittest.TestCase):
                                      at_date=date(2023, 8, 1))
         self.assertEqual(lease_cost.estimated_value(),
                          63, "Incorrect lease cost for ONLY pro rata")
+
+    def test_discounting_remaining_value(self):
+        """ Calculate the remaining value discounting """
+
+        fee = Fee(160, end_date=date(2026, 6, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=5000,
+                                     borrowing_rate=0.03, 
+                                     at_date=date(2023, 6, 1),
+                                     remaining_value=3020)
+        self.assertEqual(lease_cost.discounted_end_value(),
+                         2748, "Incorrect discounted remaining value")
+
+    def test_create_discount_factors_from_borrowing_rate(self):
+        """ Create discount factors from borrowing rate """
+
+        fee = Fee(150, end_date=date(2026, 3, 1))
+        lease_cost  = LeaseCostValue(lease_fee=fee, current_asset_value=5000,
+                                     borrowing_rate=0.04, 
+                                     at_date=date(2023, 3, 1),
+                                     remaining_value=3020)
+        self.assertEqual(lease_cost.end_value_discount_factors(),
+                         {date(2023, 3, 1):1.0,
+                          date(2024, 3, 1):.96,
+                          date(2025, 3, 1):.92,
+                          date(2026, 3, 1):.88,
+                          date(2027, 3, 1):.84}, "Incorrect discount factors")        

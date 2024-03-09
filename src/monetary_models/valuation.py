@@ -428,6 +428,7 @@ class LeaseCostValue():
         self.asset_value = current_asset_value
         self.borrowing_rate = borrowing_rate
         self.at_date = at_date
+        self.remaining_value = remaining_value
 
     def estimated_value(self):
         """ An estimate of the current cost of the good """
@@ -456,7 +457,7 @@ class LeaseCostValue():
             discounted += (self.lease_fee.amount *
                               (1 - self.borrowing_rate)
                               * period.months / 12)
-            print("Discounted amount: ", discounted)
+            # print("Discounted amount: ", discounted)
             for period_no in range(1, period.years + 1):
                 if period.months == 0:
                     discounted += (self.lease_fee.amount *
@@ -467,9 +468,42 @@ class LeaseCostValue():
                                   * (12 - period.months)/12 +
                                   (1 - self.borrowing_rate) ** (period_no)
                                   * period.months/12))
-                print("Discounted period:", period_no, discounted)
+                # print("Discounted period:", period_no, discounted)
             return round(discounted)
         else:
             return (self.lease_fee.amount * num_year_payments
                     if self.lease_fee.period == Fee.FEE_YEARLY
                     else self.lease_fee.amount * num_month_payments)
+
+    def discounted_end_value(self):
+        """ Discount the end value of the item 
+
+        The value of the asset at end of the lease period is not put into
+        the liability of the cost of the lease. It needs to be accounted
+        for separately.
+        """
+
+        discount_factors = self.end_value_discount_factors()
+        return (self.remaining_value -
+            round(discount_amount(self.remaining_value,
+                                  self.lease_fee.end_date,
+                                  discount_factors)))
+
+    def end_value_discount_factors(self):
+        """ Create the discount factors from the borrowing rate """
+
+        discount_factors = dict()
+        for next_factor in self._date_and_factor():
+            discount_factors.update(next_factor)
+        return discount_factors
+
+    def _date_and_factor(self):
+        """ Return discount factors """
+
+        yield {self.at_date : 1}
+        last_date = self.at_date
+        last_factor = 1
+        while last_date <= self.lease_fee.end_date:
+            last_date = last_date + relativedelta(years=1)
+            last_factor = round(last_factor * (1 - self.borrowing_rate), 2)
+            yield {last_date :  last_factor}
