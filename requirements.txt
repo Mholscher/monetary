@@ -12,7 +12,7 @@ cwcwidth==0.1.8
 docutils==0.19
 exceptiongroup==1.1.0
 flake8==5.0.4
-greenlet==2.0.2
+greenlet==3.1.1
 idna==3.7
 imagesize==1.4.1
 importlib-metadata==4.12.0
@@ -21,6 +21,7 @@ iso4217==1.11.20220401
 Jinja2==3.1.6
 MarkupSafe==2.1.1
 mccabe==0.7.0
+-e git+https://github.com/Mholscher/monetary.git@6bb33efd51e539b8ae0a33f9730f77b21867b12b#egg=monetary
 mypy-extensions==1.0.0
 packaging==23.1
 pathspec==0.11.2
@@ -49,4 +50,4 @@ typing_extensions==4.3.0
 urllib3==2.2.2
 wcwidth==0.2.6
 WTForms==3.0.1
-zipp==3.19.2    
+zipp==3.19.2
