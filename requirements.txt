@@ -30,7 +30,6 @@ itsdangerous==2.1.2
 Jinja2==3.1.6
 MarkupSafe==2.1.1
 mccabe==0.7.0
--e git+https://github.com/Mholscher/monetary.git@3cd41b8adb8ac8ca872445e49315d95b5a5adb7c#egg=monetary
 more-itertools==8.1.0
 mypy-extensions==1.0.0
 mysqlclient==2.1.0
@@ -61,8 +60,8 @@ sphinxcontrib-serializinghtml==1.1.5
 SQLAlchemy==1.4.29
 tomli==2.0.1
 typing_extensions==4.3.0
-urllib3==2.5.0
+urllib3==2.6.0
 wcwidth==0.2.6
-Werkzeug==3.0.6
+Werkzeug==3.1.4
 WTForms==3.0.1
 zipp==3.19.2
